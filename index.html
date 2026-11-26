@@ -187,7 +187,7 @@
 <div id="invest" class="modal"><div class="card"><h2>Estate overview</h2><div id="investBody"></div><p class="small">Areas from the conceptual model (1 sketch px = 15 cm, provisional). "Proposed" items are additions beyond the original sketch.</p><button id="bInvestClose">Close</button></div></div>
 <div id="stats" class="modal"><div class="card"><h2>Zone areas (provisional)</h2><div id="statsBody"></div><button id="bStatsClose">Close</button></div></div>
 
-<script src="./estate-data.js?v=1795721659"></script>
+<script src="./estate-data.js?v=1795722291"></script>
 <script type="importmap">{"imports":{"three":"./three.module.js"}}</script>
 <script type="module">
 import * as THREE from 'three';
@@ -444,7 +444,7 @@ const fieldTex=(function(){ const S=1024, data=new Uint8Array(S*S*4);
 })();
 
 // ---------- zones (room polygons) ----------
-function zoneTex(r){ const n=r.name; if(/Road|Parking/.test(n)) return 'asphalt'; if(/Farm Land|Farming/.test(n)) return 'soil'; if(/Pen|Aisle|Store|WC|Bath|En-suite/.test(n)) return 'concrete'; if(/Bedroom|Living|Kitchen|Reception|Manager|Meeting|Workstations|LQ/.test(n)) return 'tile'; if(/Office Compound|Compound/.test(n)) return 'grass'; return 'grass'; }
+function zoneTex(r){ const n=r.name; if(/Parking/.test(n)) return 'asphalt'; if(/Road/.test(n)) return 'grass'; if(/Farm Land|Farming/.test(n)) return 'soil'; if(/Pen|Aisle|Store|WC|Bath|En-suite/.test(n)) return 'concrete'; if(/Bedroom|Living|Kitchen|Reception|Manager|Meeting|Workstations|LQ/.test(n)) return 'tile'; if(/Office Compound|Compound/.test(n)) return 'grass'; return 'grass'; }
 for(const r of D.rooms){
   const shape=new THREE.Shape(r.poly.map(p=>new THREE.Vector2(p[0],-p[1])));
   const geo=new THREE.ShapeGeometry(shape);
@@ -452,7 +452,6 @@ for(const r of D.rooms){
   if(t==='grass'){ if(/Pine|Teak|Forest Strip/.test(r.name)){ t='dirt'; tint='#6e5e44'; } else if(/Compound|Paddock|Office/.test(r.name)) tint='#c6d094'; else if(r.depth===0) tint='#b2bd7a'; else tint='#'+new THREE.Color(r.color).lerp(new THREE.Color('#aab46e'),0.75).getHexString(); }
   const m=new THREE.Mesh(geo, mat(tint,{roughness:1,side:THREE.DoubleSide,map:t}));
   m.rotation.x=-Math.PI/2; m.position.y=0.02+r.depth*0.012; m.receiveShadow=true; world.add(m);
-  if(/Road/.test(r.name)){ const P=r.poly; for(let i=0;i<P.length;i++){ const a=P[i], b=P[(i+1)%P.length]; const L=Math.hypot(b[0]-a[0],b[1]-a[1]); if(L<2) continue; const ang=Math.atan2(b[1]-a[1],b[0]-a[0]); const s=box(world, L, 0.02, 1.0, (a[0]+b[0])/2, 0.046, (a[1]+b[1])/2, '#8f8d74', {map:'dirt'}, false); s.rotation.y=-ang; } }
 }
 
 // ---------- walls ----------
@@ -570,7 +569,8 @@ function leafy(parent,x,z,h,c='#3f7a2e',w=1){
 })();
 // ---------- wear & tear: wheel tracks on roads, dirt patches on the open land ----------
 (function(){
-  for(const [cx,z0,z1,lane] of [[184.1,76,167,5.6],[37.1,107,167,3.0],[184,171,497,1.85]]) for(const sx of[-1,1]) for(const o of[-0.8,0.8]) decal(wearMat, cx+sx*(lane+o), (z0+z1)/2, 0.65, z1-z0, 0, 0.057);
+  for(const [cx,z0,z1,lane] of [[184.1,76,167,2.25],[37.1,107,167,1.75],[184,171,497,1.85]]) for(const sx of[-1,1]) for(const o of[-0.7,0.7]) decal(wearMat, cx+sx*(lane+o), (z0+z1)/2, 0.6, z1-z0, 0, 0.057);
+  decal(patchMat,184.1,80,16,11,0,0.054); decal(patchMat,37.1,108,10,7,0,0.054);
   const bnd=D.rooms.find(r=>r.depth===0).poly; const bad=D.rooms.filter(r=>r.depth>=1); const pipL=(x,z,poly)=>{ let ins=false; for(let i=0,j=poly.length-1;i<poly.length;j=i++){ const xi=poly[i][0],zi=poly[i][1],xj=poly[j][0],zj=poly[j][1]; if((zi>z)!==(zj>z)&&(x<(xj-xi)*(z-zi)/(zj-zi)+xi)) ins=!ins; } return ins; };
   let n=0,tries=0; while(n<70&&tries++<3000){ const x=Math.random()*BX, z=Math.random()*BZ; if(!pipL(x,z,bnd)) continue; if(bad.some(r=>pipL(x,z,r.poly))) continue; const sz=3+Math.random()*7; decal(patchMat,x,z,sz,sz*(0.6+Math.random()*0.6),Math.random()*180,0.052); n++; }
   for(let i=0;i<40;i++){ const x=184+(Math.random()-0.5)*60, z=BZ+10+Math.random()*300; if(Math.abs(x-184)<5.5 || flatDist(x,z)>0) continue; const sz=2+Math.random()*6; decal(patchMat,x,z,sz,sz*0.8,Math.random()*180,0.052); }
@@ -606,8 +606,8 @@ for(const it of D.items){
     case id==='deck_patio': flat(color,'wood'); break;
     case id==='patio_stone': flat('#ffffff','tile'); break;
     case id==='gravel_area'||id==='stepping_stones': flat('#ffffff','dirt'); break;
-    case id==='driveway': flat('#ffffff','asphalt'); break;
-    case id==='path_straight'||id==='path_wide': if(w<0.3||d<0.3) flat(color); else flat('#ffffff','dirt'); break;
+    case id==='driveway': { const W = w>15 ? 9 : (w>10 ? 7 : w); box(g,W,0.05,d,0,0.025,0,'#c4c4c4',{map:'asphalt'},false); for(const sx of[-1,1]) box(g,1.0,0.03,d+1,sx*(W/2+0.45),0.015,0,'#8f8d74',{map:'dirt'},false); break; }
+    case id==='path_straight'||id==='path_wide': { if(w<0.3&&d<1){ flat(color); break; } if(w<0.3||d<0.3){ const L=Math.max(w,d); const c=cyl(g,0.045,0.045,L,0,0.045,0,'#2b2b2b',{roughness:0.55,metalness:0.1},false); if(w>d) c.rotation.z=Math.PI/2; else c.rotation.x=Math.PI/2; break; } flat('#ffffff','dirt'); break; }
     case id.startsWith('lawn'): flat('#9ac46e','grass'); break;
     case id==='fence_gate': { box(g,0.18,h,0.18,-w/2,h/2,0,'#3f3f3f'); box(g,0.18,h,0.18,w/2,h/2,0,'#3f3f3f'); for(let y=0.3;y<h;y+=0.35) box(g,w,0.05,0.05,0,y,0,color||'#3f3f3f'); for(let s=-w/2+0.3;s<w/2;s+=0.3) box(g,0.04,h*0.9,0.04,s,h*0.45,0,color||'#3f3f3f',{},false); break; }
     case id==='fence_planks': box(g,w,h,0.08,0,h/2,0,'#c9a26b',{map:'wood'}); break;
@@ -897,7 +897,8 @@ function setMode(m){
   person.g.visible = (m!=='drive');
   if(m==='top'){ orbit.target.copy(CENTER); flyTo(new THREE.Vector3(CENTER.x, 300, CENTER.z+0.5), CENTER.clone(), 1.2); }
   if(m==='fly'&&prev!=='fly'){ const look=new THREE.Vector3(player.x,0,player.z); orbit.target.copy(look); flyTo(new THREE.Vector3(player.x, 40, player.z+45), look, 1.4); }
-  if(m==='tour'){ tour.playing=true; bPlay.textContent='⏸'; showCaption(tour.i); if(prev==='attract'||prev==='explore'||prev==='drive'){ const w=R[tour.i]; camera.position.set(w.p[0],w.h,w.p[1]); camera.lookAt(w.look[0],1.5,w.look[1]); tour.hold=3; } }
+  if(m==='tour'){ tour.playing=true; bPlay.textContent='⏸'; showCaption(tour.i); if(prev==='attract'||prev==='explore'||prev==='drive'){ const w=R[tour.i]; camera.position.set(w.p[0],w.h,w.p[1]); camera.lookAt(w.look[0],w.look[1],w.look[2]); tour.hold=3; } }
+  if(m==='fly'||m==='top'||m==='explore'){ camera.fov=60; camera.updateProjectionMatrix(); }
   if(m!=='tour') capChips.innerHTML='';
   if(m==='explore'){ capTitle.textContent='On foot'; capText.textContent= isTouch? 'Joystick to walk · drag to look · E near the jeep' : 'W A S D walk · Shift run · drag to look · E = jeep'; act.style.display='none'; }
   if(m==='drive'){ capTitle.textContent='Estate jeep'; capText.textContent= isTouch? 'Joystick: up gas · down brake · sides steer · E out' : 'W gas · S brake · A D steer · Space handbrake · E out'; camPitch=0.28; if(prev!=='explore'){ camYaw=veh.h; camera.position.set(veh.x-Math.sin(veh.h)*10, 5, veh.z-Math.cos(veh.h)*10); } }
@@ -960,32 +961,34 @@ function flyTo(pos, look, dur=1.6){ flyAnim={p0:camera.position.clone(), p1:pos.
 // ---------- tour ----------
 const R=D.route;
 const curve=new THREE.CatmullRomCurve3(R.map(w=>new THREE.Vector3(w.p[0], w.h, w.p[1])), false, 'centripetal', 0.3);
-const tour={i:0, t:0, playing:false, seg:7, hold:0};
+const tour={i:0, t:0, playing:false, seg:2.6, hold:0, capShown:-1};
 const stopZone={ 'Main Entrance':/Main Road/, 'Main Road':/Main Road/, 'Car Parking':/Car Parking/, 'Swimming Pool':/Farmhouse Compound/, 'Farmhouse':/Farmhouse Compound/, 'Coconut Farm':/Coconut Farm/, 'Farmland (North-East)':/Farm Land \(North-East\)/, 'Central Farming Land':/Farming Land \(Central\)/, 'Central Well':/Agricultural Water Well/, 'Goat Farm Shed':/Goat Exercise Paddock/, 'Secondary Entrance':/Secondary Access Road/, 'Farm Office':/Office Compound/, 'Teak Tree Forest':/Teak Tree Forest/, 'Pine Tree Forest':/Pine Forest/ };
 function stopChips(i){ const w=R[i]; const rx=stopZone[w.name]; const r=rx&&D.rooms.find(r=>rx.test(r.name)); let chips=`<span class="chip">${i+1} / ${R.length}</span>`; if(r) chips+=`<span class="chip">≈ ${r.area>=10000?(r.area/10000).toFixed(2)+' ha':Math.round(r.area).toLocaleString()+' m²'}</span>`; if(w.name==='Marudha Farms') chips+=`<span class="chip">≈ ${(D.rooms.find(r=>r.depth===0).area/4046.86).toFixed(1)} acres (provisional)</span>`; if(/proposed/i.test(w.name)) chips+=`<span class="chip">Proposed</span>`; capChips.innerHTML=chips; }
 R.forEach((w,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=(i+1)+'. '+w.name; jump.appendChild(o); });
 jump.onchange=()=>{ gotoStop(+jump.value); };
 function gotoStop(i){ opening.on=false; cine.style.opacity=0; tour.i=Math.max(0,Math.min(R.length-1,i)); tour.t=0; tour.hold=0; if(mode!=='tour') setMode('tour'); showCaption(tour.i); }
-function showCaption(i){ capTitle.textContent=R[i].name; capText.textContent=R[i].text; jump.value=i; stopChips(i); }
+function showCaption(i){ tour.capShown=i; capTitle.textContent=R[i].name; capText.textContent=R[i].text; jump.value=i; stopChips(i); }
 function playBtn(){ tour.playing=!tour.playing; bPlay.textContent=tour.playing?'⏸':'▶'; }
 bPlay.onclick=playBtn; bPrev.onclick=()=>gotoStop(tour.i-1); bNext.onclick=()=>gotoStop(tour.i+1);
-document.getElementById('speed').oninput=e=>{ tour.seg=7/(+e.target.value); };
+document.getElementById('speed').oninput=e=>{ tour.seg=2.6/(+e.target.value); };
 const ease=t=>t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
 const opening={on:false,t:0,dur:14};
 function startOpening(){ setMode('tour'); tour.playing=false; opening.on=true; opening.t=0; fade.style.transition='none'; fade.style.opacity=1; requestAnimationFrame(()=>{ fade.style.transition='opacity 2.4s ease'; fade.style.opacity=0; }); cineT.textContent='MARUDHA FARMS'; cineS.textContent='Integrated agricultural estate · private farmhouse'; capTitle.textContent='Marudha Farms'; capText.textContent='A new morning on the estate'; capChips.innerHTML=''; soundOn(true,true); bMute.textContent='🔊'; }
 function openingUpdate(dt){ opening.t+=dt; const u=Math.min(1,opening.t/opening.dur); const k=u<0.5?2*u*u:1-Math.pow(-2*u+2,2)/2;
   const p0=new THREE.Vector3(184,62,340), p1=new THREE.Vector3(184,2.6,198); const l0=new THREE.Vector3(184,0,110), l1=new THREE.Vector3(184,3.2,150);
   camera.position.lerpVectors(p0,p1,k); camera.lookAt(new THREE.Vector3().lerpVectors(l0,l1,k));
-  const hour=6.1+3.1*k; setSun(hour); document.getElementById('sun').value=hour;
+  const hour=6.0+1.75*k; setSun(hour); document.getElementById('sun').value=hour;
   cine.style.opacity = (opening.t>1.5&&opening.t<9.5)?1:0;
-  if(u>=1){ opening.on=false; tour.i=0; tour.t=0; tour.hold=1.2; tour.playing=true; showCaption(0); bPlay.textContent='⏸'; } }
+  if(u>=1){ opening.on=false; tour.i=0; tour.t=0; tour.hold=2.0; tour.playing=true; showCaption(0); bPlay.textContent='⏸'; } }
 function tourUpdate(dt){
   if(opening.on){ openingUpdate(dt); return; }
-  if(tour.playing){ if(tour.hold>0){ tour.hold-=dt; } else tour.t+=dt/tour.seg; if(tour.t>=1){ tour.t=0; tour.hold=2.2; tour.i++; if(tour.i>=R.length-1){ tour.i=R.length-1; tour.playing=false; bPlay.textContent='↻'; cineT.textContent='MARUDHA FARMS'; cineS.textContent='Thank you for visiting'; cine.style.opacity=1; bPlay.onclick=()=>{ cine.style.opacity=0; bPlay.onclick=playBtn; startOpening(); }; } showCaption(tour.i); } }
+  if(tour.playing){ if(tour.hold>0){ tour.hold-=dt; } else tour.t+=dt/tour.seg; if(tour.t>=1){ tour.t=0; tour.hold=3.2; tour.i++; if(tour.i>=R.length-1){ tour.i=R.length-1; tour.playing=false; bPlay.textContent='↻'; cineT.textContent='MARUDHA FARMS'; cineS.textContent='Thank you for visiting'; cine.style.opacity=1; bPlay.onclick=()=>{ cine.style.opacity=0; bPlay.onclick=playBtn; startOpening(); }; } showCaption(tour.i); } }
   const i=tour.i, n=R.length-1; const u=(i+ease(tour.t))/n;
   camera.position.lerp(curve.getPoint(Math.min(u,1)), 1-Math.pow(0.001,dt));
   const a=R[i], b=R[Math.min(i+1,n)]; const k=ease(tour.t);
-  const look=new THREE.Vector3(a.look[0]+(b.look[0]-a.look[0])*k, 1.5, a.look[1]+(b.look[1]-a.look[1])*k);
+  const look=new THREE.Vector3(a.look[0]+(b.look[0]-a.look[0])*k, a.look[1]+(b.look[1]-a.look[1])*k, a.look[2]+(b.look[2]-a.look[2])*k);
+  { const tf=(a.fov||55)+((b.fov||55)-(a.fov||55))*k; if(Math.abs(camera.fov-tf)>0.05){ camera.fov+=(tf-camera.fov)*Math.min(1,dt*4); camera.updateProjectionMatrix(); } }
+  { const capIdx = (tour.t>0.45 && tour.playing) ? Math.min(i+1,n) : i; if(capIdx!==tour.capShown) showCaption(capIdx); }
   const q0=camera.quaternion.clone(); camera.lookAt(look); const q1=camera.quaternion.clone(); camera.quaternion.copy(q0).slerp(q1, 1-Math.pow(0.002,dt));
   document.querySelector('#prog i').style.width=((i+tour.t)/n*100)+'%';
   updateZone(camera.position.x, camera.position.z, false);
