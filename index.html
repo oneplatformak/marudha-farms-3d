@@ -172,7 +172,7 @@
 <div id="invest" class="modal"><div class="card"><h2>Estate overview</h2><div id="investBody"></div><p class="small">Areas are computed from the conceptual model (1 sketch px = 15 cm, provisional). Replace with survey data when available. Items marked "proposed" are additions beyond the original sketch.</p><button id="bInvestClose">Close</button></div></div>
 <div id="stats" class="modal"><div class="card"><h2>Zone summary (provisional)</h2><div id="statsBody"></div><p class="small">Areas computed from the conceptual model at 1 sketch px = 15 cm. Replace with survey data when available.</p><button id="bStatsClose">Close</button></div></div>
 
-<script src="./estate-data.js?v=1795718074"></script>
+<script src="./estate-data.js?v=1795718444"></script>
 <script type="importmap">{"imports":{"three":"./three.module.js"}}</script>
 <script type="module">
 import * as THREE from 'three';
@@ -208,7 +208,7 @@ camera.lookAt(CENTER);
 // post-processing (bloom) — HQ only
 const composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(1,1,{samples:4, type:THREE.HalfFloatType}));
 composer.addPass(new RenderPass(scene, camera));
-const bloom = new UnrealBloomPass(new THREE.Vector2(1,1), 0.22, 0.6, 0.86); composer.addPass(bloom);
+const bloom = new UnrealBloomPass(new THREE.Vector2(1,1), 0.22, 0.6, 0.92); composer.addPass(bloom);
 composer.addPass(new OutputPass());
 
 const hemi = new THREE.HemisphereLight(0xdcf3ff, 0x5a7a3a, 0.75); scene.add(hemi);
@@ -230,7 +230,7 @@ function setSun(hour){
   scene.background.copy(sky); scene.fog.color.copy(sky).lerp(new THREE.Color(0xffffff),0.25*day);
   hemi.intensity = 0.12+0.6*day; hemi.color.setHSL(0.6,0.5,0.5+0.4*day);
   if(window.__sky){ window.__sky.material.color.copy(sky).lerp(new THREE.Color(1,1,1),0.5*day); }
-  if(window.__clouds) for(const c of window.__clouds){ c.material.color.copy(sun.color).lerp(new THREE.Color(1,1,1),0.6).multiplyScalar(0.25+0.75*day); }
+  if(window.__clouds) for(const c of window.__clouds){ c.material.color.copy(sun.color).lerp(new THREE.Color(1,1,1),0.6).multiplyScalar(0.06+0.94*day); }
   if(window.__glass){ window.__glass.emissive.set('#ffd27a'); window.__glass.emissiveIntensity=night*1.2; }
   if(window.__lampMats) for(const m of window.__lampMats) m.emissiveIntensity=0.15+night*1.6;
   if(window.__stars) window.__stars.material.opacity=night;
@@ -270,6 +270,10 @@ const TEX={
     if(texCache.has('leaf')) return texCache.get('leaf'); const cv=document.createElement('canvas'); cv.width=cv.height=128; const g=cv.getContext('2d'); g.clearRect(0,0,128,128);
     for(let i=0;i<9;i++){ const a=-Math.PI/2+(i-4)*0.32; g.strokeStyle=`hsl(${105+Math.random()*25},55%,${32+Math.random()*18}%)`; g.lineWidth=9+Math.random()*6; g.lineCap='round'; g.beginPath(); g.moveTo(64,124); g.quadraticCurveTo(64+Math.cos(a)*30,124+Math.sin(a)*70-20, 64+Math.cos(a)*55, 124+Math.sin(a)*110); g.stroke(); }
     const t=new THREE.CanvasTexture(cv); t.colorSpace=THREE.SRGBColorSpace; texCache.set('leaf',t); return t; },
+  frond: ()=>{ if(texCache.has('frond')) return texCache.get('frond'); const cv=document.createElement('canvas'); cv.width=512; cv.height=128; const g=cv.getContext('2d'); g.clearRect(0,0,512,128); g.lineCap='round';
+    g.strokeStyle='#7a5a2a'; g.lineWidth=5; g.beginPath(); g.moveTo(0,64); g.lineTo(505,64); g.stroke();
+    for(let x=14;x<500;x+=9){ const L=36+Math.sin(x/500*3.1)*22-(x>440?(x-440)*0.5:0); for(const sgn of[-1,1]){ g.strokeStyle=`hsl(${105+Math.random()*25},50%,${30+Math.random()*22}%)`; g.lineWidth=3.5+Math.random()*1.5; g.beginPath(); g.moveTo(x,64); g.lineTo(x+16, 64+sgn*L); g.stroke(); } }
+    const t=new THREE.CanvasTexture(cv); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=8; texCache.set('frond',t); return t; },
   canopy: ()=>{ if(texCache.has('canopy')) return texCache.get('canopy'); const sz=256, cv=document.createElement('canvas'); cv.width=cv.height=sz; const g=cv.getContext('2d'); g.clearRect(0,0,sz,sz);
     for(let i=0;i<420;i++){ const a=Math.random()*6.28, rr=Math.pow(Math.random(),0.6)*sz*0.46; const x=sz/2+Math.cos(a)*rr, y=sz/2+Math.sin(a)*rr*0.9; g.fillStyle=`hsl(${100+Math.random()*30},${45+Math.random()*25}%,${26+Math.random()*26}%)`; g.beginPath(); g.ellipse(x,y,7+Math.random()*9,4+Math.random()*6,Math.random()*3,0,6.28); g.fill(); }
     const t=new THREE.CanvasTexture(cv); t.colorSpace=THREE.SRGBColorSpace; texCache.set('canopy',t); return t; },
@@ -404,13 +408,15 @@ function pine(parent,x,z,h,c='#1f5e2e'){
   const layers=4; const base=jit(c,0.12); for(let i=0;i<layers;i++){ const k=i/layers; cone(g, (h*0.24)*(1-k*0.6), h*0.36, 0, h*0.28+k*h*0.2+h*0.18, 0, i%2?base:jit('#2b7a3a',0.1)); }
   parent.add(g); return g;
 }
+const frondMats={};
+function frondMat(c){ if(!frondMats[c]) frondMats[c]=new THREE.MeshStandardMaterial({map:TEX.frond(), color:new THREE.Color(c), alphaTest:0.4, side:THREE.DoubleSide, roughness:0.85}); return frondMats[c]; }
+const frondGeo=(()=>{ const g=new THREE.PlaneGeometry(3.6,0.9,8,1); const P=g.attributes.position; for(let i=0;i<P.count;i++){ const x=P.getX(i)+1.8; const droop=-0.55*Math.pow(x/3.6,2)*3.6; P.setY(i, P.getY(i)+droop); } g.translate(1.8,0,0); g.computeVertexNormals(); return g; })();
 function palm(parent,x,z,h,bend=0,c='#3d8b37'){
   const g=new THREE.Group(); g.position.set(x,0,z); g.rotation.y=Math.random()*6.28;
   const segs=5; let px=0,py=0,a=0; for(let i=0;i<segs;i++){ a=bend*(i+1)*0.07; const s=cyl(g,0.13-i*0.012,0.17-i*0.012,h/segs+0.1, px, py+h/segs/2, 0, '#8a6a46',{map:'bark'}); s.rotation.z=-a; px+=Math.sin(a)*h/segs; py+=Math.cos(a)*h/segs; }
   const top=new THREE.Group(); top.position.set(px,py,0); g.add(top);
-  const fc=jit(c,0.15), fc2=jit('#4ea04a',0.15);
-  for(let i=0;i<8;i++){ const p=new THREE.Group(); p.rotation.y=i*0.785+Math.random()*0.3; p.rotation.z=-0.2-(i%3)*0.15; top.add(p);
-    let fx=0, fy=0.2, fa=0.35; for(let k=0;k<3;k++){ const seg=new THREE.Mesh(boxGeo, mat(k%2?fc:fc2,{side:THREE.DoubleSide})); seg.scale.set(1.3,0.06,0.55-k*0.12); seg.position.set(fx+Math.cos(fa)*0.65, fy+Math.sin(fa)*0.65, 0); seg.rotation.z=fa; seg.castShadow=true; p.add(seg); fx+=Math.cos(fa)*1.3; fy+=Math.sin(fa)*1.3; fa-=0.5; } }
+  const fc=jit(c,0.1), fc2=jit('#4ea04a',0.1); const n=9;
+  for(let i=0;i<n;i++){ const p=new THREE.Group(); p.rotation.y=i*(6.28/n)+Math.random()*0.3; p.rotation.z=0.55-(i%3)*0.22; top.add(p); const m=new THREE.Mesh(frondGeo, frondMat(i%2?fc:fc2)); m.castShadow=true; m.userData.noUV=true; p.add(m); }
   for(let i=0;i<3;i++){ sph(top,0.17, Math.cos(i*2.1)*0.28, -0.05, Math.sin(i*2.1)*0.28, '#6b4f2a'); }
   parent.add(g); return g;
 }
@@ -549,7 +555,7 @@ worker(38,66,0.6,'#d97706'); worker(42,62,-1.2,'#0e7490'); worker(20,152,2.2,'#b
 })();
 
 // ---------- labels ----------
-function labelSprite(text, frac=0.02, bg='rgba(251,246,230,0.95)', fg='#1f2a1d', depth=false){
+function labelSprite(text, frac=0.02, bg='rgba(240,233,214,0.95)', fg='#1f2a1d', depth=false){
   const cv=document.createElement('canvas'); const g=cv.getContext('2d'); g.font='bold 48px Segoe UI, Arial'; const tw=g.measureText(text).width;
   cv.width=Math.ceil(tw+70); cv.height=86; const c=cv.getContext('2d'); c.font='bold 48px Segoe UI, Arial';
   c.fillStyle=bg; c.beginPath(); c.roundRect(2,2,cv.width-4,cv.height-4,18); c.fill(); c.strokeStyle='rgba(47,107,47,.6)'; c.lineWidth=4; c.stroke();
@@ -562,7 +568,7 @@ for(const r of D.rooms){
   const big=r.area>400, mid=r.area>60;
   const frac= big?0.027: mid?0.019:0.015;
   const s=labelSprite(r.name.toUpperCase().replace(/ \(.*\)/,''), frac, 'rgba(251,246,230,0.95)', '#1f2a1d', !big);
-  s.position.set(r.c[0], big?7: mid?4:2.3, r.c[1]); s.userData.near= big?1200: mid?220:70; s.userData.far= big?10: mid?6:3; scene.add(s); labels.push(s);
+  s.position.set(r.c[0], big?7: mid?4:2.3, r.c[1]); s.userData.near= big?1200: mid?220:70; s.userData.far= big?10: mid?6:3; s.userData.big=big; scene.add(s); labels.push(s);
 }
 for(const l of D.labels){ if(!/ENTRANCE|PADDOCK|COMPOST|SOLAR|MACHINERY/.test(l[2])) continue; const s=labelSprite(l[2],0.018,'rgba(224,123,57,.92)','#fff',true); s.position.set(l[0],4,l[1]); s.userData.near=260; s.userData.far=6; scene.add(s); labels.push(s); }
 
@@ -728,7 +734,7 @@ function setMode(m){
   person.g.visible = (m!=='drive');
   if(m==='top'){ orbit.target.copy(CENTER); flyTo(new THREE.Vector3(CENTER.x, 300, CENTER.z+0.5), CENTER.clone(), 1.2); }
   if(m==='fly'&&prev!=='fly'){ const look=new THREE.Vector3(player.x,0,player.z); orbit.target.copy(look); flyTo(new THREE.Vector3(player.x, 40, player.z+45), look, 1.4); }
-  if(m==='tour'){ tour.playing=true; bPlay.textContent='⏸ Pause'; showCaption(tour.i); }
+  if(m==='tour'){ tour.playing=true; bPlay.textContent='⏸ Pause'; showCaption(tour.i); if(prev==='attract'||prev==='explore'||prev==='drive'){ const w=R[tour.i]; camera.position.set(w.p[0],w.h,w.p[1]); camera.lookAt(w.look[0],1.5,w.look[1]); tour.hold=3; } }
   if(m!=='tour') capChips.innerHTML='';
   if(m==='explore'){ capTitle.textContent='Explore on foot'; capText.textContent= isTouch? 'Left joystick to walk, drag on the right to look around. RUN to sprint, E near the jeep to drive.' : 'W A S D / arrows to walk, Shift to run, drag the mouse to look around. Walk to the jeep and press E to drive it.'; act.style.display='none'; }
   if(m==='drive'){ capTitle.textContent='Driving the estate jeep'; capText.textContent= isTouch? 'Joystick up = gas, down = brake, left/right = steer. E to get out.' : 'W = gas, S = brake / reverse, A D = steer, Space = handbrake, Shift = boost. E to get out.'; camPitch=0.28; }
@@ -837,13 +843,12 @@ function loop(){
   // beacons bob
   { const show=(mode==='explore'||mode==='drive'); for(const k in beacons){ beacons[k].b.visible=show; beacons[k].cone.visible=show; beacons[k].cone.position.y=9+Math.sin(now*2)*0.6; beacons[k].cone.rotation.y=now; } }
   if(toastT>0){ toastT-=dt; if(toastT<=0) document.getElementById('toast').style.opacity=0; }
-  { const k=2*Math.tan(camera.fov*Math.PI/360); for(const s of labels){ const d=s.position.distanceTo(camera.position); const vis = d < (s.userData.near||2000) && d > (s.userData.far||0); s.visible=vis; if(vis){ const h=d*k*s.userData.frac; s.scale.set(s.userData.aspect*h, h, 1); } } }
+  { const k=2*Math.tan(camera.fov*Math.PI/360); for(const s of labels){ const d=s.position.distanceTo(camera.position); let vis = d < (s.userData.near||2000) && d > (s.userData.far||0); if(mode==='tour') vis = vis && s.userData.big && d>45; if(mode==='attract') vis = vis && s.userData.big; s.visible=vis; if(vis){ const h=d*k*s.userData.frac; s.scale.set(s.userData.aspect*h, h, 1); } } }
   if((frame++%5)===0){ const dir=new THREE.Vector3(); if(mode==='explore'){ dir.set(Math.sin(player.yaw),0,Math.cos(player.yaw)); drawMini(player.x,player.z,dir); } else if(mode==='drive'){ dir.set(Math.sin(veh.h),0,Math.cos(veh.h)); drawMini(veh.x,veh.z,dir); } else { camera.getWorldDirection(dir); drawMini(camera.position.x,camera.position.z,dir); } }
   { const fx = mode==='drive'?veh.x: mode==='explore'?player.x: camera.position.x+camera.getWorldDirection(new THREE.Vector3()).x*40; const fz = mode==='drive'?veh.z: mode==='explore'?player.z: camera.position.z+camera.getWorldDirection(new THREE.Vector3()).z*40; updateShadowFocus(Math.max(-60,Math.min(BX+60,fx)), Math.max(-60,Math.min(BZ+80,fz))); }
   if(HQ) composer.render(); else renderer.render(scene,camera);
   requestAnimationFrame(loop);
 }
-window.__dbg={camera,scene,world,get mode(){return mode;},player,veh,gates};
 loop();
 </script>
 </body>
