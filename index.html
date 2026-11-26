@@ -191,7 +191,7 @@
 <div id="invest" class="modal"><div class="card"><h2>Estate overview</h2><div id="investBody"></div><p class="small">Areas from the conceptual model (1 sketch px = 15 cm, provisional). "Proposed" items are additions beyond the original sketch.</p><button id="bInvestClose">Close</button></div></div>
 <div id="stats" class="modal"><div class="card"><h2>Zone areas (provisional)</h2><div id="statsBody"></div><button id="bStatsClose">Close</button></div></div>
 
-<script src="./estate-data.js?v=1795723718"></script>
+<script src="./estate-data.js?v=1795723974"></script>
 <script type="importmap">{"imports":{"three":"./three.module.js"}}</script>
 <script type="module">
 import * as THREE from 'three';
@@ -477,7 +477,7 @@ for(const r of D.rooms){
 }
 
 // ---------- walls ----------
-function wallTex(color,tex,h){ if(tex==='stone') return ['#cfc8b8','stone']; if(tex==='red-brick') return ['#ffffff','brick']; if(tex==='concrete-block') return ['#e4ddd0','plaster']; if(tex==='wood-panel') return ['#d2b48c','wood']; if(color==='#2f6b2f') return ['#4b8a3f','hedge']; if(h>=2.5) return ['#efe7d6','plaster']; return [color,null]; }
+function wallTex(color,tex,h){ if(tex==='stone') return ['#cfc8b8','stone']; if(tex==='red-brick') return ['#ffffff','brick']; if(tex==='concrete-block') return ['#e4ddd0','plaster']; if(tex==='wood-panel') return ['#f3ecd9','plaster']; if(color==='#2f6b2f') return ['#4b8a3f','hedge']; if(h>=2.5) return ['#efe7d6','plaster']; return [color,null]; }
 for(const w of D.walls){
   const [x1,z1,x2,z2,t,h,color,tex]=w;
   const L=Math.hypot(x2-x1,z2-z1); if(L<0.05) continue;
@@ -581,8 +581,8 @@ const teakMats={};
 function teakMat(c){ if(!teakMats[c]){ teakMats[c]=new THREE.MeshStandardMaterial({map:TEX.teakLeaf(), color:new THREE.Color(c), alphaTest:0.45, side:THREE.DoubleSide, roughness:0.9}); addSway(teakMats[c],0.12,false); } return teakMats[c]; }
 function teak(parent,x,z,h){
   const g=new THREE.Group(); g.position.set(x,heightAt(x,z),z); g.rotation.y=Math.random()*6.28;
-  cyl(g,0.13,0.2,h*0.64,0,h*0.32,0,'#9a9080',{map:'bark'});
-  for(let i=0;i<4;i++){ const b=cyl(g,0.04,0.08,h*0.3,0,h*0.66,0,'#9a9080'); b.rotation.z=0.5; b.rotation.y=i*1.57+0.4; }
+  cyl(g,0.13,0.2,h*0.64,0,h*0.32,0,'#a89c88',{map:'bark'});
+  for(let i=0;i<3;i++){ const b=cyl(g,0.03,0.06,h*0.22,0,h*0.72,0,'#6e6456'); b.rotation.z=0.38; b.rotation.y=i*2.1+0.4; }
   const base=jit('#62a848',0.12), alt=jit('#7cbb52',0.1); const R=h*0.3, cy=h*0.8;
   const puffs=[[0,cy+R*0.3,0,1],[R*0.6,cy,0,0.8],[-R*0.5,cy+R*0.1,R*0.3,0.8],[0.1*R,cy,-R*0.6,0.75],[-0.2*R,cy+0.1*R,0.6*R,0.75]];
   for(const [px,py,pz,sc] of puffs){ const sz=R*1.6*sc; const m=teakMat(Math.random()<0.5?base:alt);
