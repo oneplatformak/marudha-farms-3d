@@ -172,7 +172,7 @@
 <div id="invest" class="modal"><div class="card"><h2>Estate overview</h2><div id="investBody"></div><p class="small">Areas are computed from the conceptual model (1 sketch px = 15 cm, provisional). Replace with survey data when available. Items marked "proposed" are additions beyond the original sketch.</p><button id="bInvestClose">Close</button></div></div>
 <div id="stats" class="modal"><div class="card"><h2>Zone summary (provisional)</h2><div id="statsBody"></div><p class="small">Areas computed from the conceptual model at 1 sketch px = 15 cm. Replace with survey data when available.</p><button id="bStatsClose">Close</button></div></div>
 
-<script src="./estate-data.js?v=1795718595"></script>
+<script src="./estate-data.js?v=1795718710"></script>
 <script type="importmap">{"imports":{"three":"./three.module.js"}}</script>
 <script type="module">
 import * as THREE from 'three';
@@ -568,7 +568,7 @@ for(const r of D.rooms){
   const big=r.area>400, mid=r.area>60;
   const frac= big?0.027: mid?0.019:0.015;
   const s=labelSprite(r.name.toUpperCase().replace(/ \(.*\)/,''), frac, 'rgba(251,246,230,0.95)', '#1f2a1d', !big);
-  s.position.set(r.c[0], big?7: mid?4:2.3, r.c[1]); s.userData.near= big?1200: mid?220:70; s.userData.far= big?10: mid?6:3; s.userData.big=big; scene.add(s); labels.push(s);
+  s.position.set(r.c[0], big?11: mid?4.5:2.3, r.c[1]); s.userData.near= big?1200: mid?220:70; s.userData.far= big?10: mid?6:3; s.userData.big=big; scene.add(s); labels.push(s);
 }
 for(const l of D.labels){ if(!/ENTRANCE|PADDOCK|COMPOST|SOLAR|MACHINERY/.test(l[2])) continue; const s=labelSprite(l[2],0.018,'rgba(224,123,57,.92)','#fff',true); s.position.set(l[0],4,l[1]); s.userData.near=260; s.userData.far=6; scene.add(s); labels.push(s); }
 
