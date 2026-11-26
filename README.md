@@ -5,11 +5,11 @@ Open-world 3D visualisation of the Marudha Farms agricultural estate & private f
 **Live:** https://oneplatformak.github.io/marudha-farms-3d/
 
 ## What you can do
-- **Guided tour** — cinematic fly-through from the main entrance to every zone.
-- **Explore** — walk (W A S D, Shift = run), drive the estate jeep (E), open gates, enter buildings.
+- **Guided tour** — cinematic dawn opening at the main gate, then every zone (letterbox, soft music).
+- **Walk / Drive** — walk (W A S D, Shift = run) or drive the estate jeep, gates open, enter buildings.
 - **Fly / Top view** — orbit the whole master plan.
 - **Click any zone** for its description and approximate area.
-- **Investor overview** — estate total, zone breakdown, highlights.
+- **Estate overview** — estate total, zone breakdown, highlights.
 - **Master plan** — the illustrated site plan.
 - **Time of day** — sunrise to night (stars, glowing farmhouse windows and lamps).
 - **Photo / Share / Fullscreen** — save a screenshot, copy the link, present full-screen.
