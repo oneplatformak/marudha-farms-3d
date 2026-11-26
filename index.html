@@ -199,7 +199,7 @@
 <div id="invest" class="modal"><div class="card"><h2>Estate overview</h2><div id="investBody"></div><p class="small">Areas from the conceptual model (1 sketch px = 15 cm, provisional). "Proposed" items are additions beyond the original sketch.</p><button id="bInvestClose">Close</button></div></div>
 <div id="stats" class="modal"><div class="card"><h2>Zone areas (provisional)</h2><div id="statsBody"></div><button id="bStatsClose">Close</button></div></div>
 
-<script src="./estate-data.js?v=1795725152"></script>
+<script src="./estate-data.js?v=1795726455"></script>
 <script type="importmap">{"imports":{"three":"./three.module.js"}}</script>
 <script type="module">
 import * as THREE from 'three';
@@ -356,7 +356,7 @@ const MACRO={grass:14,soil:4,dirt:5,asphalt:6};
 const manager=new THREE.LoadingManager(); const texLoader=new THREE.TextureLoader(manager);
 const PBR={ grass:['tex/grass',5], dry:['tex/dry',5], soil:['tex/soil',3], plough:['tex/plough',4], dirt:['tex/dirt',3.5], asphalt:['tex/asphalt',5], roof:['tex/roof',2.2], plaster:['tex/plaster',3], stone:['tex/stone',2.4], brick:['tex/brick',2], concrete:['tex/concrete',3], tin:['tex/tin',1.8], wood:['tex/wood',2], planks:['tex/planks',2], bark:['tex/bark',1.2], leaves:['tex/leaves',2.5], tile:['tex/tile',1.6] };
 const pbrCache={};
-function pbr(name){ if(pbrCache[name]) return pbrCache[name]; const [dir,m]=PBR[name]; const mk=(f,srgb)=>{ const t=texLoader.load(dir+'/'+f+'.webp?v=1795725152'); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(1/m,1/m); t.anisotropy=8; if(srgb) t.colorSpace=THREE.SRGBColorSpace; return t; }; return pbrCache[name]={map:mk('d',true), normalMap:mk('n',false), roughnessMap:mk('r',false)}; }
+function pbr(name){ if(pbrCache[name]) return pbrCache[name]; const [dir,m]=PBR[name]; const mk=(f,srgb)=>{ const t=texLoader.load(dir+'/'+f+'.webp?v=1795726455'); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(1/m,1/m); t.anisotropy=8; if(srgb) t.colorSpace=THREE.SRGBColorSpace; return t; }; return pbrCache[name]={map:mk('d',true), normalMap:mk('n',false), roughnessMap:mk('r',false)}; }
 window.__loadManager=manager;
 function addSway(m, amp, byUv){ m.onBeforeCompile=sh=>{ sh.uniforms.time=window.__time; sh.vertexShader=('uniform float time;\n'+sh.vertexShader).replace('#include <begin_vertex>','#include <begin_vertex>\n{ vec3 wp=position;\n#ifdef USE_INSTANCING\nwp=(instanceMatrix*vec4(position,1.0)).xyz;\n#endif\nfloat sw=sin(time*1.3+wp.x*0.11+wp.z*0.07)+0.45*sin(time*2.4+wp.z*0.23+wp.x*0.05); float hf='+(byUv?'uv.y':'smoothstep(1.2,6.0,position.y)')+'; transformed.x+=sw*'+amp.toFixed(3)+'*hf; transformed.z+=sw*'+(amp*0.4).toFixed(3)+'*hf; }'); }; m.customProgramCacheKey=()=>'sway'+amp+(byUv?'u':'p'); m.userData.hook=(mm)=>addSway(mm,amp,byUv); }
 function addMacro(m,tile,blend){ m.onBeforeCompile=sh=>{ sh.uniforms.macroMap={value:TEX.macro()}; sh.uniforms.macroScale={value:tile/170}; sh.uniforms.blendMap={value:blend?pbr('dry').map:TEX.macro()}; sh.fragmentShader=sh.fragmentShader.replace('uniform vec3 diffuse;','uniform vec3 diffuse; uniform sampler2D macroMap; uniform sampler2D blendMap; uniform float macroScale;').replace('#include <map_fragment>','#include <map_fragment>\n#ifdef USE_MAP\n{ float mc=texture2D(macroMap, vMapUv*macroScale).r; float mc2=texture2D(macroMap, vMapUv*macroScale*4.7+0.37).r; float mc3=texture2D(macroMap, vMapUv*macroScale*2.3+0.71).r;'+(blend?' vec3 bl=texture2D(blendMap, vMapUv*1.07).rgb*diffuse; diffuseColor.rgb=mix(diffuseColor.rgb, bl, smoothstep(0.52,0.8,mc3)*0.5);':'')+' diffuseColor.rgb*= mix(vec3(0.74), vec3(1.2), mc)*mix(vec3(0.9),vec3(1.1),mc2); }\n#endif'); }; m.customProgramCacheKey=()=>'macro'+(blend?'b':''); m.userData.hook=(mm)=>addMacro(mm,tile,blend); }
@@ -963,7 +963,7 @@ function exploreUpdate(dt){
   let ix=0, iz=0; if(keys.KeyW||keys.ArrowUp) iz-=1; if(keys.KeyS||keys.ArrowDown) iz+=1; if(keys.KeyA||keys.ArrowLeft) ix-=1; if(keys.KeyD||keys.ArrowRight) ix+=1;
   ix+=joyV.x; iz+=joyV.y; const run=keys.ShiftLeft||keys.ShiftRight||runBtn;
   const mag=Math.min(1,Math.hypot(ix,iz));
-  if(mag>0.05){ const a=Math.atan2(ix,-iz); const dirYaw=camYaw+a; // camera-relative
+  if(mag>0.05){ const a=Math.atan2(-ix,-iz); const dirYaw=camYaw+a; // camera-relative (camera right = -cos(yaw), +sin(yaw))
     const sp=(run?8.5:4.2)*mag; const nx=player.x+Math.sin(dirYaw)*sp*dt, nz=player.z+Math.cos(dirYaw)*sp*dt; const p={x:nx,z:nz}; collide(p,0.4); player.x=p.x; player.z=p.z;
     let dy=dirYaw-player.yaw; dy=Math.atan2(Math.sin(dy),Math.cos(dy)); player.yaw+=dy*Math.min(1,dt*12); player.moving=run?2:1; player.t+=dt*(run?13:9);
     idleT+=dt; if(idleT>1.2&&!dragging){ let cy=dirYaw; let d=cy-camYaw; d=Math.atan2(Math.sin(d),Math.cos(d)); camYaw+=d*Math.min(1,dt*1.5); }
