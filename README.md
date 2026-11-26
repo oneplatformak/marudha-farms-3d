@@ -1,0 +1,33 @@
+# Marudha Farms — Interactive 3D Estate
+
+Open-world 3D visualisation of the Marudha Farms agricultural estate & private farmhouse, generated from the owner's hand-drawn site plan.
+
+**Live:** https://oneplatformak.github.io/marudha-farms-3d/
+
+## What you can do
+- **Guided tour** — cinematic fly-through from the main entrance to every zone.
+- **Explore** — walk (W A S D, Shift = run), drive the estate jeep (E), open gates, enter buildings.
+- **Fly / Top view** — orbit the whole master plan.
+- **Click any zone** for its description and approximate area.
+- **Investor overview** — estate total, zone breakdown, highlights.
+- **Master plan** — the illustrated site plan.
+- **Time of day** — sunrise to night (farmhouse windows and lamps light up).
+- **Photo / Share** — save a screenshot, copy the link.
+
+Works on desktop and mobile (touch joystick).
+
+## Zones
+Pine forest · Teak forest · Forest strip · 3 farmland blocks · Central well · Goat farm (shed, pens, paddock) · Labour quarters · Farm office · Farmhouse + pool · Coconut plantation · Car parking · Main & secondary roads · Proposed: solar array, rainwater tank, compost, machinery shed.
+
+## Tech
+Single static page: [three.js](https://threejs.org) (r170) with procedural textures, instanced crops, merged static geometry. No build step — open `index.html` or serve the folder.
+
+| File | Purpose |
+|---|---|
+| `index.html` | the whole app (UI + scene + controls) |
+| `estate-data.js` | zones, walls, doors, windows, objects, tour route (metres) |
+| `three.module.js`, `OrbitControls.js`, `BufferGeometryUtils.js`, `RoomEnvironment.js` | three.js runtime (vendored) |
+| `masterplan.jpg` | illustrated site plan |
+
+## Accuracy
+Conceptual model. Provisional scale: 1 sketch px = 15 cm (≈ 248 m × 170 m estate, ~6.9 acres). Not a survey; orientation unknown. Replace `estate-data.js` with survey-based geometry when available.
