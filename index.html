@@ -191,7 +191,7 @@
 <div id="invest" class="modal"><div class="card"><h2>Estate overview</h2><div id="investBody"></div><p class="small">Areas from the conceptual model (1 sketch px = 15 cm, provisional). "Proposed" items are additions beyond the original sketch.</p><button id="bInvestClose">Close</button></div></div>
 <div id="stats" class="modal"><div class="card"><h2>Zone areas (provisional)</h2><div id="statsBody"></div><button id="bStatsClose">Close</button></div></div>
 
-<script src="./estate-data.js?v=1795723557"></script>
+<script src="./estate-data.js?v=1795723718"></script>
 <script type="importmap">{"imports":{"three":"./three.module.js"}}</script>
 <script type="module">
 import * as THREE from 'three';
@@ -523,10 +523,10 @@ function hipRoof(x1,z1,x2,z2,h,color,overhang=0.8,pitch=0.5){
   if(ridgeLen>0){ box(world, alongX?ridgeLen+0.4:0.35, 0.14, alongX?0.35:ridgeLen+0.4, cx, h+rise+0.02, cz, '#5e2410'); }
 }
 function gableTin(x1,z1,x2,z2,eave,rise){ const w=x2-x1+1.6, d=z2-z1+1.6, cx=(x1+x2)/2, cz=(z1+z2)/2; const alongZ=d>=w; const span=alongZ?w:d; const L=Math.hypot(span/2,rise)+0.1;
-  for(const sgn of[-1,1]){ const r=box(world, alongZ?L:d, 0.06, alongZ?d:L, alongZ?cx+sgn*span/4:cx, eave+rise/2, alongZ?cz:cz+sgn*span/4, '#ffffff',{map:'tin',side:THREE.DoubleSide,metalness:0.6,roughness:0.45}); if(alongZ) r.rotation.z=-sgn*Math.atan2(rise,span/2); else r.rotation.x=sgn*Math.atan2(rise,span/2); }
+  for(const sgn of[-1,1]){ const r=box(world, alongZ?L:d, 0.06, alongZ?d:L, alongZ?cx+sgn*span/4:cx, eave+rise/2, alongZ?cz:cz+sgn*span/4, '#ffffff',{map:'tin',side:THREE.DoubleSide,metalness:0.35,roughness:0.5,envMapIntensity:0.8}); if(alongZ) r.rotation.z=-sgn*Math.atan2(rise,span/2); else r.rotation.x=sgn*Math.atan2(rise,span/2); }
   box(world, alongZ?0.3:d+0.2, 0.1, alongZ?d+0.2:0.3, cx, eave+rise+0.03, cz, '#8d939a',{metalness:0.7,roughness:0.4}); // ridge cap
   // gable ends (open triangle in GI sheet)
-  for(const e of[-1,1]){ const gx=alongZ?cx:cx+e*w/2, gz=alongZ?cz+e*d/2:cz; const tri=new THREE.Shape([new THREE.Vector2(-span/2,0),new THREE.Vector2(span/2,0),new THREE.Vector2(0,rise)]); const gm=new THREE.Mesh(new THREE.ShapeGeometry(tri), mat('#ffffff',{map:'tin',side:THREE.DoubleSide,metalness:0.6,roughness:0.45})); gm.position.set(gx,eave,gz); if(!alongZ) gm.rotation.y=Math.PI/2; gm.castShadow=true; world.add(gm); }
+  for(const e of[-1,1]){ const gx=alongZ?cx:cx+e*w/2, gz=alongZ?cz+e*d/2:cz; const tri=new THREE.Shape([new THREE.Vector2(-span/2,0),new THREE.Vector2(span/2,0),new THREE.Vector2(0,rise)]); const gm=new THREE.Mesh(new THREE.ShapeGeometry(tri), mat('#ffffff',{map:'tin',side:THREE.DoubleSide,metalness:0.35,roughness:0.5,envMapIntensity:0.8})); gm.position.set(gx,eave,gz); if(!alongZ) gm.rotation.y=Math.PI/2; gm.castShadow=true; world.add(gm); }
   // steel posts + trusses
   const px=[], pz=[]; for(let x=x1+0.3;x<=x2-0.2;x+=(x2-x1-0.6)/4) px.push(x); for(let z=z1+0.3;z<=z2-0.2;z+=(z2-z1-0.6)/5) pz.push(z);
   for(const x of px) for(const z of [z1+0.3,z2-0.3]) cyl(world,0.08,0.08,eave,x,eave/2,z,'#9aa0a6',{metalness:0.8,roughness:0.35});
