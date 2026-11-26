@@ -68,6 +68,14 @@ Mobile: **UNVERIFIED** — a real phone / Moto G GPU cannot be emulated from thi
 ### Console
 Zero errors on the live build after `483c062` (one `ReferenceError` was shipped in `01fa102` and fixed in the next commit).
 
+## Phase 0.7 — compound entrance engineered (b461c20, 5603d00)
+
+| Item | Result |
+|---|---|
+| Walk controls | **VERIFIED** — left/right were mirrored in walk mode (keys + joystick); fixed, checked by measuring the camera displacement against the camera's right vector |
+| Farmhouse compound gate | **VERIFIED** — walls (boundary stone wall, compound fence, parking kerb) are now cut for a real 8 m opening; masonry pillars with lamp caps and a "FARMHOUSE" plate; double-leaf steel gate (rails, stiles, bars, diagonal brace) that opens for the jeep/visitor |
+| Driveway | **VERIFIED** — 9 m concrete apron with kerbs from the main-road edge to the gate; parking slab with bay markings and wheel stops; cars keep their data positions, sedan red / SUV navy |
+
 ## Before / after by stop
 
 | Stop | Before | After |
