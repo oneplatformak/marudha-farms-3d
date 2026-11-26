@@ -188,7 +188,7 @@
 <div id="invest" class="modal"><div class="card"><h2>Estate overview</h2><div id="investBody"></div><p class="small">Areas from the conceptual model (1 sketch px = 15 cm, provisional). "Proposed" items are additions beyond the original sketch.</p><button id="bInvestClose">Close</button></div></div>
 <div id="stats" class="modal"><div class="card"><h2>Zone areas (provisional)</h2><div id="statsBody"></div><button id="bStatsClose">Close</button></div></div>
 
-<script src="./estate-data.js?v=1795722823"></script>
+<script src="./estate-data.js?v=1795722997"></script>
 <script type="importmap">{"imports":{"three":"./three.module.js"}}</script>
 <script type="module">
 import * as THREE from 'three';
@@ -216,10 +216,10 @@ renderer.setPixelRatio(Math.min(devicePixelRatio, isTouch?1.5:2));
 renderer.shadowMap.enabled = HQ;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.05;
+renderer.toneMappingExposure = 1.12;
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xbfe3ff);
-scene.fog = new THREE.Fog(0xcfe9ff, 240, 1900);
+scene.fog = new THREE.Fog(0xcfe9ff, 320, 2300);
 const camera = new THREE.PerspectiveCamera(60, 1, 0.5, 6000);
 camera.position.set(BX/2, 120, BZ+140);
 camera.lookAt(CENTER);
@@ -235,7 +235,7 @@ const bloom = new UnrealBloomPass(new THREE.Vector2(1,1), 0.22, 0.6, 0.92); comp
 composer.addPass(new OutputPass());
 window.__time={value:0};
 const grade=new ShaderPass({ uniforms:{ tDiffuse:{value:null}, time:window.__time }, vertexShader:`varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
-  fragmentShader:`uniform sampler2D tDiffuse; uniform float time; varying vec2 vUv; void main(){ vec4 c=texture2D(tDiffuse,vUv); vec3 col=c.rgb; col=mix(col, col*col*(3.0-2.0*col), 0.22); float l=dot(col,vec3(0.299,0.587,0.114)); col=mix(vec3(l),col,1.05); float n=fract(sin(dot(vUv*vec2(1234.5,876.3)+fract(time*0.37), vec2(12.9898,78.233)))*43758.5453); col+=(n-0.5)*0.022; gl_FragColor=vec4(col,c.a); }` });
+  fragmentShader:`uniform sampler2D tDiffuse; uniform float time; varying vec2 vUv; void main(){ vec4 c=texture2D(tDiffuse,vUv); vec3 col=c.rgb; col=mix(col, col*col*(3.0-2.0*col), 0.22); float l=dot(col,vec3(0.299,0.587,0.114)); col=mix(vec3(l),col,1.12); float n=fract(sin(dot(vUv*vec2(1234.5,876.3)+fract(time*0.37), vec2(12.9898,78.233)))*43758.5453); col+=(n-0.5)*0.022; gl_FragColor=vec4(col,c.a); }` });
 composer.addPass(grade);
 
 const hemi = new THREE.HemisphereLight(0xdcf3ff, 0x6a6a44, 0.6); scene.add(hemi);
@@ -251,11 +251,11 @@ let __envHour=-99;
 function setSun(hour){
   const t=(hour-5.5)/15, day=Math.max(0,Math.sin(Math.min(1,Math.max(0,t))*Math.PI)), az=-Math.PI*0.15+t*Math.PI*1.1, el=day*1.1+0.08;
   sunDir.set(Math.cos(az)*Math.cos(el), Math.max(0.08,Math.sin(el)), Math.sin(az)*Math.cos(el)).normalize();
-  const warm = Math.pow(1-day,1.5); sun.intensity = 0.1+2.6*day;
+  const warm = Math.pow(1-day,1.5); sun.intensity = 0.1+3.0*day;
   sun.color.setHSL(0.08, 0.6*warm, 1-0.2*warm);
   const night=1-Math.min(1,day*2.2); window.__night=night;
-  const hor=new THREE.Color(0.05,0.07,0.12).lerp(new THREE.Color(0.70,0.82,0.92),day).lerp(new THREE.Color(1.0,0.55,0.25), warm*0.3*Math.min(1,day*2.5));
-  const zen=new THREE.Color(0.012,0.016,0.045).lerp(new THREE.Color(0.14,0.36,0.82),day);
+  const hor=new THREE.Color(0.05,0.07,0.12).lerp(new THREE.Color(0.64,0.78,0.92),day).lerp(new THREE.Color(1.0,0.55,0.25), warm*0.3*Math.min(1,day*2.5));
+  const zen=new THREE.Color(0.012,0.016,0.045).lerp(new THREE.Color(0.11,0.32,0.84),day);
   scene.background.copy(hor); scene.fog.color.copy(hor);
   hemi.intensity = 0.1+0.55*day; hemi.color.copy(zen).lerp(hor,0.5).lerp(new THREE.Color(1,1,1),0.3*day); hemi.groundColor.setHSL(0.14,0.25,0.12+0.25*day);
   if(window.__skyU){ window.__skyU.sunDir.value.copy(sunDir); window.__skyU.day.value=day; window.__skyU.warm.value=warm; }
@@ -398,7 +398,7 @@ const skyU={ sunDir:{value:new THREE.Vector3(0,1,0)}, day:{value:1}, warm:{value
 const skyMat=new THREE.ShaderMaterial({ uniforms:skyU, side:THREE.BackSide, depthWrite:false, fog:false,
   vertexShader:`varying vec3 vDir; void main(){ vec4 w=modelMatrix*vec4(position,1.0); vDir=w.xyz-cameraPosition; gl_Position=projectionMatrix*viewMatrix*w; gl_Position.z=gl_Position.w*0.99999; }`,
   fragmentShader:`uniform vec3 sunDir; uniform float day; uniform float warm; varying vec3 vDir;
-  void main(){ vec3 d=normalize(vDir); float h=d.y; vec3 zen=mix(vec3(0.012,0.016,0.045), vec3(0.14,0.36,0.82), day); vec3 hor=mix(vec3(0.05,0.07,0.12), vec3(0.70,0.82,0.92), day);
+  void main(){ vec3 d=normalize(vDir); float h=d.y; vec3 zen=mix(vec3(0.012,0.016,0.045), vec3(0.11,0.32,0.84), day); vec3 hor=mix(vec3(0.05,0.07,0.12), vec3(0.64,0.78,0.92), day);
     float hz=pow(1.0-clamp(h,0.0,1.0),4.5); vec3 col=mix(zen,hor,hz); float sd=dot(d,sunDir); float near=pow(max(sd,0.0),3.0);
     col=mix(col, vec3(1.0,0.55,0.25), clamp(warm*hz*(0.3+0.7*near)*min(1.0,day*2.5)*1.3,0.0,1.0));
     float glow=pow(max(sd,0.0),80.0)*0.7+pow(max(sd,0.0),10.0)*0.14; float disc=smoothstep(0.99935,0.99975,sd);
@@ -426,7 +426,7 @@ const fieldTex=(function(){ const S=1024, data=new Uint8Array(S*S*4);
   for(let j=0;j<S;j++) for(let i=0;i<S;i++){ const x=FORG.x+(i+0.5)/S*FS, z=FORG.y+(j+0.5)/S*FS; const d=flatDist(x,z), r=Math.hypot(x-CENTER.x,z-CENTER.z);
     let g=1,so=0,dr=0,bund=0;
     if(d>30){ const wx=x+(vnoise(x*0.011+5,z*0.011)-0.5)*70, wz=z+(vnoise(x*0.011+9,z*0.011+4)-0.5)*70; const cs=92, cz=66; const ix=Math.floor(wx/cs), iz=Math.floor(wz/cz); const fx=wx-ix*cs, fz=wz-iz*cz; const h=hash2(ix,iz); const e=Math.min(fx,cs-fx,fz,cz-fz);
-      if(h<0.34){ g=1; so=0.08; } else if(h<0.52){ const st=0.5+0.5*Math.sin(fx*5.2); g=0.55+0.45*st; so=1-g; } else if(h<0.70){ g=0.12; so=1; } else if(h<0.86){ g=0.35; dr=1; } else { g=0.6; dr=0.5; so=0.2; }
+      if(h<0.42){ g=1; so=0.05; } else if(h<0.62){ const st=0.5+0.5*Math.sin(fx*5.2); g=0.55+0.45*st; so=1-g; } else if(h<0.76){ g=0.12; so=1; } else if(h<0.9){ g=0.4; dr=1; } else { g=0.6; dr=0.5; so=0.2; }
       bund=smoothstep(3.2,1.0,e)*0.9; if(hash2(ix+31,iz+7)<0.28 && fz<4.5) bund=Math.max(bund,0.7); if(hash2(ix+77,iz+91)<0.22 && fx<4.5) bund=Math.max(bund,0.7);
       const fr=smoothstep(520,760,r); const forest=fbm(x*0.02+1,z*0.02+2,3); g=g*(1-fr)+fr*1; so=so*(1-fr)+fr*(forest<0.42?0.6:0.05); dr*=(1-fr); bund*=(1-fr);
       const k=smoothstep(30,60,d); g=1*(1-k)+g*k; so*=k; dr*=k; bund*=k; }
@@ -442,7 +442,7 @@ const fieldTex=(function(){ const S=1024, data=new Uint8Array(S*S*4);
   for(let j=0;j<N;j++) for(let i=0;i<N;i++){ const a=j*(N+1)+i, b=a+1, cc=a+N+1, d=cc+1; idx.push(a,cc,b, b,cc,d); }
   const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2)); g.setAttribute('color',new THREE.Float32BufferAttribute(col,3)); g.setIndex(idx); g.computeVertexNormals();
   const gp=pbr('grass'), pp=pbr('plough'), dp=pbr('dry');
-  const tm=new THREE.MeshStandardMaterial({map:gp.map, normalMap:gp.normalMap, roughnessMap:gp.roughnessMap, normalScale:new THREE.Vector2(0.9,0.9), roughness:1, vertexColors:true});
+  const tm=new THREE.MeshStandardMaterial({map:gp.map, color:new THREE.Color('#d2eab4'), normalMap:gp.normalMap, roughnessMap:gp.roughnessMap, normalScale:new THREE.Vector2(0.9,0.9), roughness:1, vertexColors:true});
   tm.onBeforeCompile=sh=>{ sh.uniforms.fieldMap={value:fieldTex}; sh.uniforms.soilMap={value:pp.map}; sh.uniforms.dryMap={value:dp.map}; sh.uniforms.macroMap={value:TEX.macro()}; sh.uniforms.fieldOrigin={value:FORG};
     sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nvarying vec2 vWP;').replace('#include <project_vertex>','#include <project_vertex>\nvWP=(modelMatrix*vec4(transformed,1.0)).xz;');
     sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nvarying vec2 vWP; uniform sampler2D fieldMap; uniform sampler2D soilMap; uniform sampler2D dryMap; uniform sampler2D macroMap; uniform vec2 fieldOrigin;')
@@ -457,7 +457,7 @@ for(const r of D.rooms){
   const shape=new THREE.Shape(r.poly.map(p=>new THREE.Vector2(p[0],-p[1])));
   const geo=new THREE.ShapeGeometry(shape);
   let t=zoneTex(r); let tint = t==='soil'?'#ffffff':(t==='asphalt'?'#d0d0d0':'#ffffff');
-  if(t==='grass'){ if(/Pine|Teak|Forest Strip/.test(r.name)){ t='leaves'; tint='#ffffff'; } else if(/Compound|Paddock|Office/.test(r.name)) tint='#d4e6bc'; else if(r.depth===0) tint='#e2e8cf'; else tint='#'+new THREE.Color(r.color).lerp(new THREE.Color('#e0e6cc'),0.8).getHexString(); }
+  if(t==='grass'){ if(/Pine|Teak|Forest Strip/.test(r.name)){ t='leaves'; tint='#ffffff'; } else if(/Compound|Paddock|Office/.test(r.name)) tint='#c9ecaa'; else if(r.depth===0) tint='#d6ecb8'; else tint='#'+new THREE.Color(r.color).lerp(new THREE.Color('#e0e6cc'),0.8).getHexString(); }
   const m=new THREE.Mesh(geo, mat(tint,{roughness:1,side:THREE.DoubleSide,map:t}));
   m.rotation.x=-Math.PI/2; m.position.y=0.02+r.depth*0.012; m.receiveShadow=true; world.add(m);
 }
