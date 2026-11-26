@@ -316,7 +316,7 @@ function cone(parent, r,h, x,y,z, color, shadow=true, opts){
 function sph(parent, r, x,y,z, color, sy=1, opts){
   const m = new THREE.Mesh(sphGeo, mat(color, Object.assign({flatShading:true},opts||{}))); m.scale.set(r,r*sy,r); m.position.set(x,y,z); m.castShadow=true; m.receiveShadow=true; parent.add(m); return m;
 }
-const jit=(c,amt=0.06)=>{ const k=(Math.floor(Math.random()*5)-2)/2; const col=new THREE.Color(c); const hsl={}; col.getHSL(hsl); col.setHSL(hsl.h+k*amt*0.15, Math.min(1,Math.max(0,hsl.s+k*amt)), Math.min(1,Math.max(0,hsl.l+k*amt))); return '#'+col.getHexString(); };
+const jit=(c,amt=0.06)=>{ const k=(Math.floor(Math.random()*5)-2)/2; const col=new THREE.Color(c); const hsl={}; col.getHSL(hsl); col.setHSL(hsl.h+k*amt*0.15, Math.min(1,Math.max(0,hsl.s+k*amt*0.8)), Math.min(1,Math.max(0,hsl.l+k*amt*0.5))); return '#'+col.getHexString(); };
 
 // ---------- environment / sky ----------
 {
@@ -632,7 +632,7 @@ const objectives=[...new Set(D.rooms.map(r=>groupOf(r.name)).filter(Boolean))];
 const visited=new Set();
 const beacons={};
 for(const o of objectives){ const rs=D.rooms.filter(r=>groupOf(r.name)===o); const r=rs.sort((a,b)=>b.area-a.area)[0];
-  const b=new THREE.Mesh(new THREE.CylinderGeometry(0.6,0.6,60,10,1,true), new THREE.MeshBasicMaterial({color:0xe07b39,transparent:true,opacity:0.35,depthWrite:false,side:THREE.DoubleSide})); b.position.set(r.c[0],30,r.c[1]); scene.add(b);
+  const b=new THREE.Mesh(new THREE.CylinderGeometry(0.6,0.6,60,10,1,true), new THREE.MeshBasicMaterial({color:0xe07b39,transparent:true,opacity:0.18,depthWrite:false,side:THREE.DoubleSide})); b.position.set(r.c[0],30,r.c[1]); scene.add(b);
   const cone=new THREE.Mesh(new THREE.ConeGeometry(1.2,2.2,8), new THREE.MeshBasicMaterial({color:0xe07b39})); cone.rotation.x=Math.PI; cone.position.set(r.c[0],9,r.c[1]); scene.add(cone); beacons[o]={b,cone}; }
 function renderObjectives(){ objList.innerHTML=objectives.map(o=>`<div class="${visited.has(o)?'done':''}">${visited.has(o)?'✅':'⬜'} ${o}</div>`).join(''); objCount.textContent=`${visited.size} / ${objectives.length} discovered`; }
 renderObjectives();
@@ -835,7 +835,7 @@ function loop(){
   // birds
   if(window.__birds) for(const b of window.__birds){ b.ph+=dt*b.sp; b.fl+=dt*9; b.g.position.set(b.cx+Math.cos(b.ph)*b.r, b.y+Math.sin(b.ph*2.3)*3, b.cz+Math.sin(b.ph)*b.r); b.g.rotation.y=-b.ph; const f=Math.sin(b.fl)*0.6; b.wl.rotation.z=f; b.wr.rotation.z=-f; }
   // beacons bob
-  for(const k in beacons){ beacons[k].cone.position.y=9+Math.sin(now*2)*0.6; beacons[k].cone.rotation.y=now; }
+  { const show=(mode==='explore'||mode==='drive'); for(const k in beacons){ beacons[k].b.visible=show; beacons[k].cone.visible=show; beacons[k].cone.position.y=9+Math.sin(now*2)*0.6; beacons[k].cone.rotation.y=now; } }
   if(toastT>0){ toastT-=dt; if(toastT<=0) document.getElementById('toast').style.opacity=0; }
   { const k=2*Math.tan(camera.fov*Math.PI/360); for(const s of labels){ const d=s.position.distanceTo(camera.position); const vis = d < (s.userData.near||2000) && d > (s.userData.far||0); s.visible=vis; if(vis){ const h=d*k*s.userData.frac; s.scale.set(s.userData.aspect*h, h, 1); } } }
   if((frame++%5)===0){ const dir=new THREE.Vector3(); if(mode==='explore'){ dir.set(Math.sin(player.yaw),0,Math.cos(player.yaw)); drawMini(player.x,player.z,dir); } else if(mode==='drive'){ dir.set(Math.sin(veh.h),0,Math.cos(veh.h)); drawMini(veh.x,veh.z,dir); } else { camera.getWorldDirection(dir); drawMini(camera.position.x,camera.position.z,dir); } }
