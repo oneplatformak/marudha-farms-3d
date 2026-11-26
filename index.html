@@ -172,7 +172,7 @@
 <div id="invest" class="modal"><div class="card"><h2>Estate overview</h2><div id="investBody"></div><p class="small">Areas are computed from the conceptual model (1 sketch px = 15 cm, provisional). Replace with survey data when available. Items marked "proposed" are additions beyond the original sketch.</p><button id="bInvestClose">Close</button></div></div>
 <div id="stats" class="modal"><div class="card"><h2>Zone summary (provisional)</h2><div id="statsBody"></div><p class="small">Areas computed from the conceptual model at 1 sketch px = 15 cm. Replace with survey data when available.</p><button id="bStatsClose">Close</button></div></div>
 
-<script src="./estate-data.js?v=1795718444"></script>
+<script src="./estate-data.js?v=1795718595"></script>
 <script type="importmap">{"imports":{"three":"./three.module.js"}}</script>
 <script type="module">
 import * as THREE from 'three';
@@ -843,7 +843,7 @@ function loop(){
   // beacons bob
   { const show=(mode==='explore'||mode==='drive'); for(const k in beacons){ beacons[k].b.visible=show; beacons[k].cone.visible=show; beacons[k].cone.position.y=9+Math.sin(now*2)*0.6; beacons[k].cone.rotation.y=now; } }
   if(toastT>0){ toastT-=dt; if(toastT<=0) document.getElementById('toast').style.opacity=0; }
-  { const k=2*Math.tan(camera.fov*Math.PI/360); for(const s of labels){ const d=s.position.distanceTo(camera.position); let vis = d < (s.userData.near||2000) && d > (s.userData.far||0); if(mode==='tour') vis = vis && s.userData.big && d>45; if(mode==='attract') vis = vis && s.userData.big; s.visible=vis; if(vis){ const h=d*k*s.userData.frac; s.scale.set(s.userData.aspect*h, h, 1); } } }
+  { const k=2*Math.tan(camera.fov*Math.PI/360); for(const s of labels){ const d=s.position.distanceTo(camera.position); let vis = d < (s.userData.near||2000) && d > (s.userData.far||0); if(mode==='tour') vis = vis && s.userData.big && camera.position.y>22 && d>60; if(mode==='attract') vis = vis && s.userData.big; s.visible=vis; if(vis){ const h=d*k*s.userData.frac; s.scale.set(s.userData.aspect*h, h, 1); } } }
   if((frame++%5)===0){ const dir=new THREE.Vector3(); if(mode==='explore'){ dir.set(Math.sin(player.yaw),0,Math.cos(player.yaw)); drawMini(player.x,player.z,dir); } else if(mode==='drive'){ dir.set(Math.sin(veh.h),0,Math.cos(veh.h)); drawMini(veh.x,veh.z,dir); } else { camera.getWorldDirection(dir); drawMini(camera.position.x,camera.position.z,dir); } }
   { const fx = mode==='drive'?veh.x: mode==='explore'?player.x: camera.position.x+camera.getWorldDirection(new THREE.Vector3()).x*40; const fz = mode==='drive'?veh.z: mode==='explore'?player.z: camera.position.z+camera.getWorldDirection(new THREE.Vector3()).z*40; updateShadowFocus(Math.max(-60,Math.min(BX+60,fx)), Math.max(-60,Math.min(BZ+80,fz))); }
   if(HQ) composer.render(); else renderer.render(scene,camera);

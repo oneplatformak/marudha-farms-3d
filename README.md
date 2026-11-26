@@ -11,8 +11,10 @@ Open-world 3D visualisation of the Marudha Farms agricultural estate & private f
 - **Click any zone** for its description and approximate area.
 - **Investor overview** — estate total, zone breakdown, highlights.
 - **Master plan** — the illustrated site plan.
-- **Time of day** — sunrise to night (farmhouse windows and lamps light up).
-- **Photo / Share** — save a screenshot, copy the link.
+- **Time of day** — sunrise to night (stars, glowing farmhouse windows and lamps).
+- **Photo / Share / Fullscreen** — save a screenshot, copy the link, present full-screen.
+- **High quality toggle** — bloom glow + shadows (desktop) or performance mode (mobile).
+- **Ambient sound** — optional synthesised wind and birdsong.
 
 Works on desktop and mobile (touch joystick).
 
@@ -20,13 +22,13 @@ Works on desktop and mobile (touch joystick).
 Pine forest · Teak forest · Forest strip · 3 farmland blocks · Central well · Goat farm (shed, pens, paddock) · Labour quarters · Farm office · Farmhouse + pool · Coconut plantation · Car parking · Main & secondary roads · Proposed: solar array, rainwater tank, compost, machinery shed.
 
 ## Tech
-Single static page: [three.js](https://threejs.org) (r170) with procedural textures, instanced crops, merged static geometry. No build step — open `index.html` or serve the folder.
+Single static page: [three.js](https://threejs.org) (r170) with procedural textures (grass, soil, stone, brick, tile, wood, water), alpha-cutout foliage (palm fronds, tree canopies, crops, grass tufts), instanced vegetation, merged static geometry (~200 draw calls), bloom post-processing, dynamic sun/night cycle. No build step — open `index.html` or serve the folder.
 
 | File | Purpose |
 |---|---|
 | `index.html` | the whole app (UI + scene + controls) |
 | `estate-data.js` | zones, walls, doors, windows, objects, tour route (metres) |
-| `three.module.js`, `OrbitControls.js`, `BufferGeometryUtils.js`, `RoomEnvironment.js` | three.js runtime (vendored) |
+| `three.module.js`, `OrbitControls.js`, `BufferGeometryUtils.js`, `RoomEnvironment.js`, `postprocessing/`, `shaders/` | three.js runtime (vendored) |
 | `masterplan.jpg` | illustrated site plan |
 
 ## Accuracy
