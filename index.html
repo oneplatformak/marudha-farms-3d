@@ -187,7 +187,7 @@
 <div id="invest" class="modal"><div class="card"><h2>Estate overview</h2><div id="investBody"></div><p class="small">Areas from the conceptual model (1 sketch px = 15 cm, provisional). "Proposed" items are additions beyond the original sketch.</p><button id="bInvestClose">Close</button></div></div>
 <div id="stats" class="modal"><div class="card"><h2>Zone areas (provisional)</h2><div id="statsBody"></div><button id="bStatsClose">Close</button></div></div>
 
-<script src="./estate-data.js?v=1795722291"></script>
+<script src="./estate-data.js?v=1795722549"></script>
 <script type="importmap">{"imports":{"three":"./three.module.js"}}</script>
 <script type="module">
 import * as THREE from 'three';
@@ -771,7 +771,7 @@ function makeJeep(){
   return g;
 }
 const jeep=makeJeep();
-const veh={x:D.start.p[0], z:D.start.p[1]+9, h:Math.PI, speed:0, steer:0};
+const veh={x:D.start.p[0], z:D.start.p[1]+31, h:Math.PI, speed:0, steer:0};
 jeep.position.set(veh.x,0,veh.z); jeep.rotation.y=veh.h;
 
 // ---------- collision ----------
@@ -843,7 +843,7 @@ function joyMove(e){ const r=joy.getBoundingClientRect(); let dx=e.clientX-(r.le
 let runBtn=false; mRun.addEventListener('pointerdown',()=>runBtn=true); mRun.addEventListener('pointerup',()=>runBtn=false); mAct.addEventListener('click',action); bAct.addEventListener('click',action);
 
 // ---------- player / vehicle ----------
-const player={x:D.start.p[0]+5, z:D.start.p[1]+6, yaw:Math.PI, moving:0, t:0};
+const player={x:D.start.p[0]+5, z:D.start.p[1]+28, yaw:Math.PI, moving:0, t:0};
 let mode='attract'; let attractT=0;
 function attractUpdate(dt){ attractT+=dt*0.08; const r=150, h=70; camera.position.set(CENTER.x+Math.cos(attractT)*r, h+Math.sin(attractT*0.7)*12, CENTER.z+Math.sin(attractT)*r*0.8); camera.lookAt(CENTER.x, 2, CENTER.z); }
 function nearJeep(){ return Math.hypot(player.x-veh.x, player.z-veh.z)<3.5; }
@@ -906,7 +906,7 @@ function setMode(m){
   if(m==='top'){ capTitle.textContent='Master plan'; capText.textContent='Drag to rotate · wheel to zoom · click a zone'; act.style.display='none'; }
 }
 bExplore.onclick=()=>setMode('explore'); bDrive.onclick=()=>setMode('drive'); bCtrls.onclick=()=>{ ctrls.style.display=ctrls.style.display==='block'?'none':'block'; };
-bHome.onclick=()=>{ player.x=D.start.p[0]+5; player.z=D.start.p[1]+6; player.yaw=Math.PI; veh.x=D.start.p[0]; veh.z=D.start.p[1]+9; veh.h=Math.PI; veh.speed=0; camYaw=Math.PI; setMode('explore'); toast('Back at the main entrance'); };
+bHome.onclick=()=>{ player.x=D.start.p[0]+5; player.z=D.start.p[1]+28; player.yaw=Math.PI; veh.x=D.start.p[0]; veh.z=D.start.p[1]+31; veh.h=Math.PI; veh.speed=0; camYaw=Math.PI; setMode('explore'); toast('Back at the main entrance'); };
 bPlan.onclick=()=>plan.style.display='flex'; bPlanClose.onclick=()=>plan.style.display='none';
 bMore.onclick=()=>{ more.style.display = more.style.display==='flex'?'none':'flex'; };
 bFull.onclick=()=>{ try{ if(document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen(); }catch(e){ toast('Fullscreen not available here'); } };
@@ -966,13 +966,13 @@ const stopZone={ 'Main Entrance':/Main Road/, 'Main Road':/Main Road/, 'Car Park
 function stopChips(i){ const w=R[i]; const rx=stopZone[w.name]; const r=rx&&D.rooms.find(r=>rx.test(r.name)); let chips=`<span class="chip">${i+1} / ${R.length}</span>`; if(r) chips+=`<span class="chip">≈ ${r.area>=10000?(r.area/10000).toFixed(2)+' ha':Math.round(r.area).toLocaleString()+' m²'}</span>`; if(w.name==='Marudha Farms') chips+=`<span class="chip">≈ ${(D.rooms.find(r=>r.depth===0).area/4046.86).toFixed(1)} acres (provisional)</span>`; if(/proposed/i.test(w.name)) chips+=`<span class="chip">Proposed</span>`; capChips.innerHTML=chips; }
 R.forEach((w,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=(i+1)+'. '+w.name; jump.appendChild(o); });
 jump.onchange=()=>{ gotoStop(+jump.value); };
-function gotoStop(i){ opening.on=false; cine.style.opacity=0; tour.i=Math.max(0,Math.min(R.length-1,i)); tour.t=0; tour.hold=0; if(mode!=='tour') setMode('tour'); showCaption(tour.i); }
+function gotoStop(i){ opening.on=false; cine.style.opacity=0; bPlay.onclick=playBtn; bPlay.textContent=tour.playing?'⏸':'▶'; tour.i=Math.max(0,Math.min(R.length-1,i)); tour.t=0; tour.hold=0; if(mode!=='tour') setMode('tour'); showCaption(tour.i); }
 function showCaption(i){ tour.capShown=i; capTitle.textContent=R[i].name; capText.textContent=R[i].text; jump.value=i; stopChips(i); }
 function playBtn(){ tour.playing=!tour.playing; bPlay.textContent=tour.playing?'⏸':'▶'; }
 bPlay.onclick=playBtn; bPrev.onclick=()=>gotoStop(tour.i-1); bNext.onclick=()=>gotoStop(tour.i+1);
 document.getElementById('speed').oninput=e=>{ tour.seg=2.6/(+e.target.value); };
 const ease=t=>t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
-const opening={on:false,t:0,dur:14};
+const opening={on:false,t:0,dur:14}; window.__dbg={tour,opening,get mode(){return mode;},setMode,gotoStop:(i)=>gotoStop(i)};
 function startOpening(){ setMode('tour'); tour.playing=false; opening.on=true; opening.t=0; fade.style.transition='none'; fade.style.opacity=1; requestAnimationFrame(()=>{ fade.style.transition='opacity 2.4s ease'; fade.style.opacity=0; }); cineT.textContent='MARUDHA FARMS'; cineS.textContent='Integrated agricultural estate · private farmhouse'; capTitle.textContent='Marudha Farms'; capText.textContent='A new morning on the estate'; capChips.innerHTML=''; soundOn(true,true); bMute.textContent='🔊'; }
 function openingUpdate(dt){ opening.t+=dt; const u=Math.min(1,opening.t/opening.dur); const k=u<0.5?2*u*u:1-Math.pow(-2*u+2,2)/2;
   const p0=new THREE.Vector3(184,62,340), p1=new THREE.Vector3(184,2.6,198); const l0=new THREE.Vector3(184,0,110), l1=new THREE.Vector3(184,3.2,150);
