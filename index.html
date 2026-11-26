@@ -64,7 +64,7 @@
   #intro{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 40%,rgba(20,40,20,.25),rgba(10,20,10,.75))}
   #intro .card{background:var(--cream);border-radius:22px;padding:22px 26px;max-width:min(94vw,640px);max-height:94vh;overflow:auto;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.45)}
   #intro h1{margin:0 0 2px;font-size:34px;color:var(--green);letter-spacing:3px;font-family:"Playfair Display",serif}
-  #intro h3{margin:0 0 12px;font-weight:500;font-size:14px;opacity:.85}
+  #intro h3{margin:0 0 12px;font-weight:500;font-size:14px;opacity:.85;letter-spacing:.08em;text-transform:uppercase}
   #intro .plan{width:100%;border-radius:12px;display:block;margin:0 0 12px;box-shadow:0 6px 20px rgba(0,0,0,.25)}
   #intro p{font-size:13px;line-height:1.5;margin:0 0 14px}
   #intro .btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
@@ -91,33 +91,57 @@
   #mbtn{right:24px;bottom:150px;display:none;flex-direction:column;gap:8px}
   #mbtn button{width:64px;height:64px;border-radius:50%;font-size:13px}
   #vig{position:fixed;inset:0;z-index:2;pointer-events:none;background:radial-gradient(ellipse at center,rgba(0,0,0,0) 55%,rgba(0,0,0,.28) 100%)}
+
+  #barT,#barB{position:fixed;left:0;right:0;z-index:4;pointer-events:none;background:#000;height:0;transition:height .9s ease}
+  #barT{top:0}#barB{bottom:0}
+  body.cine #barT,body.cine #barB{height:8vh}
+  #hud,#mini,#brand{transition:opacity .8s}
+  body.cine #hud,body.cine #mini,body.cine #brand{opacity:0;pointer-events:none}
+  #fade{position:fixed;inset:0;z-index:18;background:#000;opacity:0;pointer-events:none;transition:opacity 2.2s ease}
+  #cine{position:fixed;inset:0;z-index:6;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;opacity:0;transition:opacity 1.6s ease;text-align:center}
+  #cine b{font-family:"Playfair Display",serif;font-size:clamp(34px,7vw,92px);letter-spacing:.18em;color:#fff8e6;text-shadow:0 4px 30px rgba(0,0,0,.6),0 0 60px rgba(255,220,150,.35)}
+  #cine span{font-size:clamp(12px,1.6vw,20px);letter-spacing:.35em;color:#fff3d6;text-shadow:0 2px 14px rgba(0,0,0,.6);margin-top:10px;text-transform:uppercase}
+  #intro .btns button{font-size:16px;padding:14px 22px;border-radius:14px}
+  #intro .btns button.big{background:var(--accent);color:#fff}
+  #caption.tour{background:rgba(20,30,18,.72);color:#fff;box-shadow:none}
+  #caption.tour h2{color:#f3e9c9;font-size:19px}
+  #caption.tour p{color:#e9e2cf}
+  #caption.tour .chip{background:rgba(255,255,255,.14);color:#f3e9c9}
+  #caption.tour select{background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.25)}
+  #caption.tour button{background:rgba(255,255,255,.15);color:#fff;box-shadow:none}
+  #caption.tour button.accent{background:var(--accent)}
+  #ctrls{right:12px;bottom:14px;background:var(--panel);border-radius:12px;padding:8px 12px;font-size:12px;max-width:250px;line-height:1.45;box-shadow:0 4px 14px rgba(0,0,0,.18);display:none}
+  #ctrls b{color:var(--green)}
   @media (max-width:760px){#help{display:none}#brand h1{font-size:15px}#brand p{display:none}#mini canvas{width:120px;height:82px}#caption{bottom:8px;padding:8px 10px}#modes .seg button{padding:6px 7px;font-size:12px}#hud{max-width:40vw}#zone{font-size:12px;padding:5px 10px}}
 </style>
 </head>
 <body>
 <canvas id="c"></canvas>
 <div id="vig"></div>
+<div id="barT"></div><div id="barB"></div>
+<div id="fade"></div>
+<div id="cine"><b id="cineT">MARUDHA FARMS</b><span id="cineS">Integrated agricultural estate</span></div>
 
-<div id="brand" class="ui"><h1>MARUDHA FARMS</h1><p>Integrated Agricultural Estate &amp; Farmhouse — explore it in 3D</p></div>
+<div id="brand" class="ui"><h1>MARUDHA FARMS</h1></div>
 
 <div id="hud" class="ui"><span id="zone">Main Entrance</span><span id="toast"></span></div>
 
 <div id="modes" class="ui">
-  <div class="seg"><button id="bExplore" class="on">🚶 Explore</button><button id="bTour">▶ Tour</button><button id="bFly">🛩 Fly</button><button id="bTop">🗺 Top</button></div>
-  <button id="bInvest">📈 Investor overview</button>
+  <div class="seg"><button id="bTour">▶ Tour</button><button id="bExplore">🚶 Walk</button><button id="bDrive">🚙 Drive</button><button id="bFly">🛩 Fly</button><button id="bTop">🗺 Top</button></div>
+  <button id="bInvest">📈 Estate overview</button>
   <button id="bPlan">🗺 Master plan</button>
   <button id="bMore">⋯ More</button>
   <div id="more">
     <button id="bObj">✅ Zones to discover</button>
-    <button id="bStats">📊 Zone summary</button>
-    <button id="bLegend">🎨 Legend</button>
+    <button id="bStats">📊 Zone areas</button>
+    <button id="bCtrls">⌨ Controls</button>
     <button id="bShot">📸 Save photo</button>
     <button id="bShare">🔗 Copy link</button>
     <button id="bFull">⛶ Fullscreen</button>
     <button id="bHome">⟲ Back to entrance</button>
     <label>☀ Time <input id="sun" type="range" min="5.5" max="20.5" step="0.25" value="10" style="width:90px"></label>
-    <label><input id="qHigh" type="checkbox" checked> High quality (glow, shadows)</label>
-    <label><input id="snd" type="checkbox"> Ambient sound</label>
+    <label><input id="qHigh" type="checkbox" checked> High quality</label>
+    <label><input id="snd" type="checkbox"> Sound</label>
   </div>
 </div>
 
@@ -125,25 +149,18 @@
 
 <div id="objectives" class="ui"><h3>Discover every zone</h3><div id="objList"></div><div class="small" id="objCount"></div></div>
 
-<div id="legend" class="ui">
-  <div><i style="background:#9fcf9a"></i>Pine forest</div><div><i style="background:#7fb77e"></i>Teak forest</div>
-  <div><i style="background:#e3cf9c"></i>Farm land</div><div><i style="background:#a8d59a"></i>Coconut farm</div>
-  <div><i style="background:#a9a9a9"></i>Roads</div><div><i style="background:#fde68a"></i>Goat pens</div>
-  <div><i style="background:#fdf6e3"></i>Farmhouse</div><div><i style="background:#38bdf8"></i>Water / pool / well</div>
-  <div><i style="background:#2563eb"></i>Pipelines (conceptual)</div><div><i style="background:#2f6b2f"></i>Hedge / tree line</div>
-</div>
-
 <div id="act" class="ui"><button id="bAct">🚙 Get in the jeep (E)</button></div>
 
 <div id="caption" class="ui">
   <h2 id="capTitle">Marudha Farms</h2>
-  <p id="capText">Walk with W A S D (or arrows), hold Shift to run, drag the mouse to turn the camera. Walk up to the jeep and press E to drive.</p>
+  <p id="capText"></p>
   <div id="capChips"></div>
   <div class="row" id="tourRow" style="display:none">
-    <button id="bPlay" class="accent">⏸ Pause</button>
+    <button id="bPlay" class="accent">⏸</button>
     <button id="bPrev">⏮</button><button id="bNext">⏭</button>
     <select id="jump"></select>
-    <span class="small">speed</span><input id="speed" type="range" min="0.5" max="2.5" step="0.25" value="1" style="width:80px">
+    <button id="bMute">🔊</button>
+    <input id="speed" type="range" min="0.5" max="2.5" step="0.25" value="1" style="width:70px" title="speed">
   </div>
   <div id="prog" style="display:none"><i></i></div>
 </div>
@@ -153,26 +170,24 @@
 
 <div id="mini" class="ui"><canvas id="miniC" width="180" height="123"></canvas></div>
 
-<div id="help" class="ui"><b>Walk:</b> W A S D / arrows · Shift = run · drag mouse = look · E = jeep<br><b>Drive:</b> W/S gas &amp; brake · A/D steer · Space = handbrake · E = get out<br><b>Fly:</b> drag to orbit · wheel to zoom · click a zone for details<br><span class="small">Conceptual model from the hand-drawn plan. Provisional scale, not a survey.</span></div>
+<div id="ctrls" class="ui"><b>Walk:</b> W A S D · Shift run · drag to look · E jeep<br><b>Drive:</b> W/S gas &amp; brake · A/D steer · Space handbrake · E out<br><b>Fly:</b> drag · wheel zoom · click a zone<br><span class="small">Conceptual model · provisional scale · not a survey</span></div>
 
 <div id="intro">
   <div class="card">
     <h1>MARUDHA FARMS</h1>
     <h3>Integrated Agricultural Estate &amp; Private Farmhouse</h3>
     <img class="plan" src="masterplan.jpg" alt="Marudha Farms master plan">
-    <div id="kpis"></div>
-    <p>Walk through the gate, drive the estate jeep, step inside the farmhouse, goat shed and office, and discover every zone — pine &amp; teak forests, farmland, coconut plantation, central well, worker housing and the pool-side farmhouse. Click any zone for details.</p>
-    <div class="btns"><button id="bStartTour" class="accent">▶ Guided tour</button><button id="bStart">🚶 Explore freely</button><button id="bStartInvest">📈 Investor overview</button></div>
-    <p class="small" style="margin:12px 0 0">Conceptual visualisation generated from the owner's hand-drawn site plan. Dimensions provisional, not a survey.</p>
+    <div class="btns"><button id="bStartTour" class="big">▶ Start tour</button><button id="bStartDrive">🚙 Car drive</button><button id="bStartTop">🗺 Top view</button></div>
+    <p class="small" style="margin:12px 0 0">Conceptual 3D model · not a survey</p>
   </div>
 </div>
 
 <div id="loader"><b>MARUDHA FARMS</b>Building the 3D estate…</div>
 <div id="plan" class="modal"><div class="card" style="padding:10px"><img src="masterplan.jpg" alt="Master plan" style="width:100%;border-radius:10px;display:block"><div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px"><span class="small">Conceptual site plan · not to scale</span><button id="bPlanClose">Close</button></div></div></div>
-<div id="invest" class="modal"><div class="card"><h2>Estate overview</h2><div id="investBody"></div><p class="small">Areas are computed from the conceptual model (1 sketch px = 15 cm, provisional). Replace with survey data when available. Items marked "proposed" are additions beyond the original sketch.</p><button id="bInvestClose">Close</button></div></div>
-<div id="stats" class="modal"><div class="card"><h2>Zone summary (provisional)</h2><div id="statsBody"></div><p class="small">Areas computed from the conceptual model at 1 sketch px = 15 cm. Replace with survey data when available.</p><button id="bStatsClose">Close</button></div></div>
+<div id="invest" class="modal"><div class="card"><h2>Estate overview</h2><div id="investBody"></div><p class="small">Areas from the conceptual model (1 sketch px = 15 cm, provisional). "Proposed" items are additions beyond the original sketch.</p><button id="bInvestClose">Close</button></div></div>
+<div id="stats" class="modal"><div class="card"><h2>Zone areas (provisional)</h2><div id="statsBody"></div><button id="bStatsClose">Close</button></div></div>
 
-<script src="./estate-data.js?v=1795718710"></script>
+<script src="./estate-data.js?v=1795719143"></script>
 <script type="importmap">{"imports":{"three":"./three.module.js"}}</script>
 <script type="module">
 import * as THREE from 'three';
@@ -568,9 +583,9 @@ for(const r of D.rooms){
   const big=r.area>400, mid=r.area>60;
   const frac= big?0.027: mid?0.019:0.015;
   const s=labelSprite(r.name.toUpperCase().replace(/ \(.*\)/,''), frac, 'rgba(251,246,230,0.95)', '#1f2a1d', !big);
-  s.position.set(r.c[0], big?11: mid?4.5:2.3, r.c[1]); s.userData.near= big?1200: mid?220:70; s.userData.far= big?10: mid?6:3; s.userData.big=big; scene.add(s); labels.push(s);
+  s.position.set(r.c[0], big?11: mid?4.5:2.3, r.c[1]); s.userData.near= big?1200: mid?220:70; s.userData.far= big?10: mid?6:3; s.userData.big=big; s.userData.mid=mid; scene.add(s); labels.push(s);
 }
-for(const l of D.labels){ if(!/ENTRANCE|PADDOCK|COMPOST|SOLAR|MACHINERY/.test(l[2])) continue; const s=labelSprite(l[2],0.018,'rgba(224,123,57,.92)','#fff',true); s.position.set(l[0],4,l[1]); s.userData.near=260; s.userData.far=6; scene.add(s); labels.push(s); }
+
 
 // ---------- dynamic objects: gates, goats, player, jeep ----------
 const dyn=new THREE.Group(); scene.add(dyn);
@@ -725,23 +740,23 @@ function followCamera(x,y,z,dt,dist){
 
 // ---------- modes ----------
 const orbit=new OrbitControls(camera, renderer.domElement); orbit.enableDamping=true; orbit.dampingFactor=0.08; orbit.maxPolarAngle=Math.PI/2-0.03; orbit.minDistance=3; orbit.maxDistance=500; orbit.target.copy(CENTER); orbit.enabled=false;
-const btn={explore:bExplore,tour:bTour,fly:bFly,top:bTop};
+const btn={explore:bExplore,drive:bDrive,tour:bTour,fly:bFly,top:bTop};
 function setMode(m){
-  const prev=mode; mode=m; for(const k in btn) btn[k].classList.toggle('on', k===m || (m==='drive'&&k==='explore'));
+  const prev=mode; mode=m; for(const k in btn) btn[k].classList.toggle('on', k===m); document.body.classList.toggle('cine', m==='tour'); caption.classList.toggle('tour', m==='tour'); if(m!=='tour'){ cine.style.opacity=0; }
   orbit.enabled=(m==='fly'||m==='top');
   tourRow.style.display = m==='tour'?'flex':'none'; prog.style.display = m==='tour'?'block':'none';
   joy.style.display = (isTouch&&(m==='explore'||m==='drive'))?'block':'none'; mbtn.style.display = (isTouch&&(m==='explore'||m==='drive'))?'flex':'none';
   person.g.visible = (m!=='drive');
   if(m==='top'){ orbit.target.copy(CENTER); flyTo(new THREE.Vector3(CENTER.x, 300, CENTER.z+0.5), CENTER.clone(), 1.2); }
   if(m==='fly'&&prev!=='fly'){ const look=new THREE.Vector3(player.x,0,player.z); orbit.target.copy(look); flyTo(new THREE.Vector3(player.x, 40, player.z+45), look, 1.4); }
-  if(m==='tour'){ tour.playing=true; bPlay.textContent='⏸ Pause'; showCaption(tour.i); if(prev==='attract'||prev==='explore'||prev==='drive'){ const w=R[tour.i]; camera.position.set(w.p[0],w.h,w.p[1]); camera.lookAt(w.look[0],1.5,w.look[1]); tour.hold=3; } }
+  if(m==='tour'){ tour.playing=true; bPlay.textContent='⏸'; showCaption(tour.i); if(prev==='attract'||prev==='explore'||prev==='drive'){ const w=R[tour.i]; camera.position.set(w.p[0],w.h,w.p[1]); camera.lookAt(w.look[0],1.5,w.look[1]); tour.hold=3; } }
   if(m!=='tour') capChips.innerHTML='';
-  if(m==='explore'){ capTitle.textContent='Explore on foot'; capText.textContent= isTouch? 'Left joystick to walk, drag on the right to look around. RUN to sprint, E near the jeep to drive.' : 'W A S D / arrows to walk, Shift to run, drag the mouse to look around. Walk to the jeep and press E to drive it.'; act.style.display='none'; }
-  if(m==='drive'){ capTitle.textContent='Driving the estate jeep'; capText.textContent= isTouch? 'Joystick up = gas, down = brake, left/right = steer. E to get out.' : 'W = gas, S = brake / reverse, A D = steer, Space = handbrake, Shift = boost. E to get out.'; camPitch=0.28; }
-  if(m==='fly'){ capTitle.textContent='Fly / orbit mode'; capText.textContent='Drag to orbit, wheel to zoom, right-drag to pan. Click the minimap to jump.'; act.style.display='none'; }
-  if(m==='top'){ capTitle.textContent='Top view — master plan'; capText.textContent='Drag to rotate, wheel to zoom.'; act.style.display='none'; }
+  if(m==='explore'){ capTitle.textContent='On foot'; capText.textContent= isTouch? 'Joystick to walk · drag to look · E near the jeep' : 'W A S D walk · Shift run · drag to look · E = jeep'; act.style.display='none'; }
+  if(m==='drive'){ capTitle.textContent='Estate jeep'; capText.textContent= isTouch? 'Joystick: up gas · down brake · sides steer · E out' : 'W gas · S brake · A D steer · Space handbrake · E out'; camPitch=0.28; if(prev!=='explore'){ camYaw=veh.h; camera.position.set(veh.x-Math.sin(veh.h)*10, 5, veh.z-Math.cos(veh.h)*10); } }
+  if(m==='fly'){ capTitle.textContent='Fly'; capText.textContent='Drag to orbit · wheel to zoom · click a zone'; act.style.display='none'; }
+  if(m==='top'){ capTitle.textContent='Master plan'; capText.textContent='Drag to rotate · wheel to zoom · click a zone'; act.style.display='none'; }
 }
-bExplore.onclick=()=>setMode('explore');
+bExplore.onclick=()=>setMode('explore'); bDrive.onclick=()=>setMode('drive'); bCtrls.onclick=()=>{ ctrls.style.display=ctrls.style.display==='block'?'none':'block'; };
 bHome.onclick=()=>{ player.x=D.start.p[0]+2; player.z=D.start.p[1]+5; player.yaw=Math.PI; veh.x=D.start.p[0]-7; veh.z=D.start.p[1]+7; veh.h=Math.PI; veh.speed=0; camYaw=Math.PI; setMode('explore'); toast('Back at the main entrance'); };
 bPlan.onclick=()=>plan.style.display='flex'; bPlanClose.onclick=()=>plan.style.display='none';
 bMore.onclick=()=>{ more.style.display = more.style.display==='flex'?'none':'flex'; };
@@ -749,14 +764,23 @@ bFull.onclick=()=>{ try{ if(document.fullscreenElement) document.exitFullscreen(
 qHigh.checked=HQ; qHigh.onchange=()=>{ HQ=qHigh.checked; renderer.shadowMap.enabled=HQ; renderer.setPixelRatio(HQ?Math.min(devicePixelRatio,2):1); scene.traverse(o=>{ if(o.material&&o.material.needsUpdate!==undefined) o.material.needsUpdate=true; }); resize(); toast(HQ?'High quality on':'Performance mode'); };
 // ---- ambient sound (synthesised: wind + birds) ----
 let audio=null;
-function soundOn(on){ if(on&&!audio){ try{ const ac=new (window.AudioContext||window.webkitAudioContext)(); const master=ac.createGain(); master.gain.value=0.5; master.connect(ac.destination);
+function soundOn(on,pad=false){ if(on&&audio&&pad&&!audio.pad){ padStart(audio); return; } if(on&&!audio){ try{ const ac=new (window.AudioContext||window.webkitAudioContext)(); const master=ac.createGain(); master.gain.value=0.5; master.connect(ac.destination);
     const n=ac.sampleRate*4, buf=ac.createBuffer(1,n,ac.sampleRate), d=buf.getChannelData(0); let last=0; for(let i=0;i<n;i++){ const w=Math.random()*2-1; last=(last+0.02*w)/1.02; d[i]=last*3.5; }
     const src=ac.createBufferSource(); src.buffer=buf; src.loop=true; const lp=ac.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=420; const wg=ac.createGain(); wg.gain.value=0.35; src.connect(lp).connect(wg).connect(master); src.start();
     const lfo=ac.createOscillator(); lfo.frequency.value=0.09; const lg=ac.createGain(); lg.gain.value=0.18; lfo.connect(lg).connect(wg.gain); lfo.start();
     const chirp=()=>{ if(!audio) return; const n=1+Math.floor(Math.random()*3); for(let k=0;k<n;k++){ const t0=ac.currentTime+k*0.16+Math.random()*0.05; const o=ac.createOscillator(); o.type='sine'; const f0=2200+Math.random()*1800; o.frequency.setValueAtTime(f0,t0); o.frequency.exponentialRampToValueAtTime(f0*(1.25+Math.random()*0.4),t0+0.07); o.frequency.exponentialRampToValueAtTime(f0*0.9,t0+0.13); const g=ac.createGain(); g.gain.setValueAtTime(0,t0); g.gain.linearRampToValueAtTime(0.07,t0+0.02); g.gain.linearRampToValueAtTime(0,t0+0.14); o.connect(g).connect(master); o.start(t0); o.stop(t0+0.16); } audio.timer=setTimeout(chirp, 1500+Math.random()*5000); };
-    audio={ac,master,timer:setTimeout(chirp,800)}; }catch(e){ toast('Audio not available'); snd.checked=false; } }
-  if(!on&&audio){ clearTimeout(audio.timer); audio.ac.close(); audio=null; } }
-snd.onchange=()=>soundOn(snd.checked);
+    audio={ac,master,timer:setTimeout(chirp,800)}; if(pad) padStart(audio); snd.checked=true; }catch(e){ toast('Audio not available'); snd.checked=false; } }
+  if(!on&&audio){ clearTimeout(audio.timer); clearTimeout(audio.padTimer); audio.ac.close(); audio=null; } }
+snd.onchange=()=>soundOn(snd.checked, mode==='tour');
+function padStart(a){ const ac=a.ac; const out=ac.createGain(); out.gain.value=0.0; out.connect(a.master); const lp=ac.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=1100; lp.connect(out);
+  const dl=ac.createDelay(1.0); dl.delayTime.value=0.42; const fb=ac.createGain(); fb.gain.value=0.38; dl.connect(fb).connect(dl); lp.connect(dl); dl.connect(out);
+  out.gain.linearRampToValueAtTime(0.09, ac.currentTime+4);
+  const chords=[[45,52,57,60,64],[41,48,53,57,60],[36,43,48,52,55],[43,50,55,59,62]]; let ci=0; const voices=[];
+  const play=()=>{ if(!a.pad) return; const ch=chords[ci%chords.length]; ci++; const t0=ac.currentTime; const vs=[];
+    ch.forEach((m,k)=>{ for(const det of[-6,6]){ const o=ac.createOscillator(); o.type=k===0?'sine':'triangle'; o.frequency.value=440*Math.pow(2,(m-69)/12); o.detune.value=det; const g=ac.createGain(); g.gain.setValueAtTime(0,t0); g.gain.linearRampToValueAtTime(k===0?0.5:0.22,t0+3.2); g.gain.setValueAtTime(k===0?0.5:0.22,t0+8.5); g.gain.linearRampToValueAtTime(0,t0+12); o.connect(g).connect(lp); o.start(t0); o.stop(t0+12.2); vs.push(o); } });
+    a.padTimer=setTimeout(play, 8000); };
+  a.pad={out}; play(); }
+
 bShare.onclick=()=>{ try{ navigator.clipboard.writeText(location.href).then(()=>toast('Link copied — share it with anyone'),()=>toast(location.href)); }catch(e){ toast(location.href); } };
 bShot.onclick=()=>{ renderer.render(scene,camera); try{ const a=document.createElement('a'); a.download='marudha-farms-3d.png'; a.href=canvas.toDataURL('image/png'); a.click(); toast('Photo saved'); }catch(e){ toast('Photo not available in this viewer'); } };
 // ---- investor overview ----
@@ -765,10 +789,8 @@ function groupArea(rx){ return D.rooms.filter(r=>r.depth===1&&rx.test(r.name)).r
 const breakdown=[['Forests (pine, teak, strip)',/Pine|Teak|Forest Strip/],['Farmland (3 blocks)',/Farm Land|Farming/],['Farmhouse compound (house, pool, coconut, parking)',/Farmhouse Compound/],['Goat farm (shed + paddock)',/Goat Farm Shed|Paddock/],['Estate roads',/Road/],['Farm office compound',/Office Compound/],['Labour quarters',/Labour Quarters/],['Central well',/Agricultural Water Well/]].map(([n,rx])=>[n,groupArea(rx)]);
 const used=breakdown.reduce((a,b)=>a+b[1],0); breakdown.push(['Open agricultural land (future expansion)', Math.max(0,totalArea-used)]);
 function fmt(a){ return a>=10000? (a/10000).toFixed(2)+' ha' : Math.round(a).toLocaleString()+' m²'; }
-kpis.innerHTML=`<div><b>${(totalArea/4046.86).toFixed(1)} ac</b><span>≈ ${(totalArea/10000).toFixed(2)} ha estate (provisional)</span></div><div><b>${objectives.length}</b><span>zones to explore</span></div><div><b>2</b><span>gated entrances</span></div><div><b>3</b><span>farmland blocks</span></div><div><b>1</b><span>luxury farmhouse + pool</span></div>`;
 function renderInvest(){ const max=Math.max(...breakdown.map(b=>b[1])); investBody.innerHTML=`<p style="margin:0 0 10px;font-size:13px">Total estate (inside compound wall): <b>${fmt(totalArea)}</b> ≈ <b>${(totalArea/4046.86).toFixed(2)} acres</b> — provisional scale.</p>`+breakdown.map(([n,a])=>`<div class="bar"><b>${n}</b><i style="width:${Math.max(2,a/max*260)}px"></i><span>${fmt(a)} · ${(a/totalArea*100).toFixed(0)}%</span></div>`).join('')+`<h3 style="color:var(--green);margin:14px 0 6px">Highlights</h3><ul style="margin:0;padding-left:18px;font-size:12.5px;line-height:1.5"><li>Commercial timber: elongated pine forest on the north boundary + organised teak plantation.</li><li>Three cultivation blocks with crop rows, drip lines, irrigation channel and machinery headlands.</li><li>Central agricultural well with pump house and overhead tank; conceptual pipelines to every block.</li><li>Modern goat facility: 8 pens, centre aisle, feed store, isolation pen, manure pit, exercise paddock.</li><li>Two-unit labour quarters near the livestock zone; farm office at the secondary entrance with CCTV room.</li><li>Private farmhouse compound: 3-bedroom tropical-modern house, pool &amp; deck, coconut plantation, parking.</li><li>Proposed: solar array, rainwater harvesting, composting, machinery shed, perimeter lighting &amp; CCTV.</li></ul>`; }
 bInvest.onclick=()=>{ renderInvest(); invest.style.display='flex'; }; bInvestClose.onclick=()=>invest.style.display='none';
-bStartInvest.onclick=()=>{ intro.style.display='none'; setMode('fly'); flyTo(new THREE.Vector3(CENTER.x, 150, BZ+120), CENTER.clone(), 2); renderInvest(); invest.style.display='flex'; };
 // ---- click a zone for info ----
 const ray=new THREE.Raycaster(), groundPlane=new THREE.Plane(new THREE.Vector3(0,1,0),0); let downPos=null;
 canvas.addEventListener('pointerdown',e=>{ downPos={x:e.clientX,y:e.clientY}; });
@@ -777,8 +799,8 @@ canvas.addEventListener('pointerup',e=>{ if(!downPos||Math.hypot(e.clientX-downP
   let best=null; for(const r of D.rooms){ if(r.depth===0) continue; if(pip(hit.x,hit.z,r.poly)&&(!best||r.area<best.area)) best=r; }
   if(!best){ info.style.display='none'; return; }
   const g=groupOf(best.name)||'Estate'; infoTag.textContent=g; infoTitle.textContent=best.name.replace(/ \(.*\)/,''); infoText.textContent=(best.note||'')+(best.note?' ':'')+'Approx. area: '+fmt(best.area)+'.'; info.style.display='block'; });
-infoX.onclick=()=>info.style.display='none'; bTour.onclick=()=>setMode('tour'); bFly.onclick=()=>setMode('fly'); bTop.onclick=()=>setMode('top');
-bLegend.onclick=()=>{ legend.style.display=legend.style.display==='block'?'none':'block'; };
+infoX.onclick=()=>info.style.display='none'; bTour.onclick=()=>{ if(mode==='attract') startOpening(); else setMode('tour'); }; bFly.onclick=()=>setMode('fly'); bTop.onclick=()=>setMode('top');
+
 bObj.onclick=()=>{ objectives_el.style.display=objectives_el.style.display==='block'?'none':'block'; };
 const objectives_el=document.getElementById('objectives');
 bStats.onclick=()=>{ const rows=D.rooms.filter(r=>r.depth<=1||r.area>40).sort((a,b)=>b.area-a.area).map(r=>`<tr><td>${r.name}</td><td>${r.note||''}</td><td>${r.area.toLocaleString()} m²</td></tr>`).join('');
@@ -792,17 +814,26 @@ const R=D.route;
 const curve=new THREE.CatmullRomCurve3(R.map(w=>new THREE.Vector3(w.p[0], w.h, w.p[1])), false, 'centripetal', 0.3);
 const tour={i:0, t:0, playing:false, seg:7, hold:0};
 const stopZone={ 'Main Entrance':/Main Road/, 'Main Road':/Main Road/, 'Car Parking':/Car Parking/, 'Swimming Pool':/Farmhouse Compound/, 'Farmhouse':/Farmhouse Compound/, 'Coconut Farm':/Coconut Farm/, 'Farmland (North-East)':/Farm Land \(North-East\)/, 'Central Farming Land':/Farming Land \(Central\)/, 'Central Well':/Agricultural Water Well/, 'Goat Farm Shed':/Goat Exercise Paddock/, 'Secondary Entrance':/Secondary Access Road/, 'Farm Office':/Office Compound/, 'Teak Tree Forest':/Teak Tree Forest/, 'Pine Tree Forest':/Pine Forest/ };
-function stopChips(i){ const w=R[i]; const rx=stopZone[w.name]; const r=rx&&D.rooms.find(r=>rx.test(r.name)); let chips=`<span class="chip">Stop ${i+1} of ${R.length}</span>`; if(r) chips+=`<span class="chip">≈ ${r.area>=10000?(r.area/10000).toFixed(2)+' ha':Math.round(r.area).toLocaleString()+' m²'}</span>`; if(w.name==='Marudha Farms') chips+=`<span class="chip">≈ ${(D.rooms.find(r=>r.depth===0).area/4046.86).toFixed(1)} acres (provisional)</span>`; if(/proposed/i.test(w.name)) chips+=`<span class="chip">Proposed</span>`; capChips.innerHTML=chips; }
+function stopChips(i){ const w=R[i]; const rx=stopZone[w.name]; const r=rx&&D.rooms.find(r=>rx.test(r.name)); let chips=`<span class="chip">${i+1} / ${R.length}</span>`; if(r) chips+=`<span class="chip">≈ ${r.area>=10000?(r.area/10000).toFixed(2)+' ha':Math.round(r.area).toLocaleString()+' m²'}</span>`; if(w.name==='Marudha Farms') chips+=`<span class="chip">≈ ${(D.rooms.find(r=>r.depth===0).area/4046.86).toFixed(1)} acres (provisional)</span>`; if(/proposed/i.test(w.name)) chips+=`<span class="chip">Proposed</span>`; capChips.innerHTML=chips; }
 R.forEach((w,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=(i+1)+'. '+w.name; jump.appendChild(o); });
 jump.onchange=()=>{ gotoStop(+jump.value); };
-function gotoStop(i){ tour.i=Math.max(0,Math.min(R.length-1,i)); tour.t=0; tour.hold=0; if(mode!=='tour') setMode('tour'); showCaption(tour.i); }
+function gotoStop(i){ opening.on=false; cine.style.opacity=0; tour.i=Math.max(0,Math.min(R.length-1,i)); tour.t=0; tour.hold=0; if(mode!=='tour') setMode('tour'); showCaption(tour.i); }
 function showCaption(i){ capTitle.textContent=R[i].name; capText.textContent=R[i].text; jump.value=i; stopChips(i); }
-function playBtn(){ tour.playing=!tour.playing; bPlay.textContent=tour.playing?'⏸ Pause':'▶ Play'; }
+function playBtn(){ tour.playing=!tour.playing; bPlay.textContent=tour.playing?'⏸':'▶'; }
 bPlay.onclick=playBtn; bPrev.onclick=()=>gotoStop(tour.i-1); bNext.onclick=()=>gotoStop(tour.i+1);
 document.getElementById('speed').oninput=e=>{ tour.seg=7/(+e.target.value); };
 const ease=t=>t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+const opening={on:false,t:0,dur:14};
+function startOpening(){ setMode('tour'); tour.playing=false; opening.on=true; opening.t=0; fade.style.transition='none'; fade.style.opacity=1; requestAnimationFrame(()=>{ fade.style.transition='opacity 2.4s ease'; fade.style.opacity=0; }); cineT.textContent='MARUDHA FARMS'; cineS.textContent='Integrated agricultural estate · private farmhouse'; capTitle.textContent='Marudha Farms'; capText.textContent='A new morning on the estate'; capChips.innerHTML=''; soundOn(true,true); bMute.textContent='🔊'; }
+function openingUpdate(dt){ opening.t+=dt; const u=Math.min(1,opening.t/opening.dur); const k=u<0.5?2*u*u:1-Math.pow(-2*u+2,2)/2;
+  const p0=new THREE.Vector3(184,62,340), p1=new THREE.Vector3(184,2.6,198); const l0=new THREE.Vector3(184,0,110), l1=new THREE.Vector3(184,3.2,150);
+  camera.position.lerpVectors(p0,p1,k); camera.lookAt(new THREE.Vector3().lerpVectors(l0,l1,k));
+  const hour=6.1+3.1*k; setSun(hour); document.getElementById('sun').value=hour;
+  cine.style.opacity = (opening.t>1.5&&opening.t<9.5)?1:0;
+  if(u>=1){ opening.on=false; tour.i=0; tour.t=0; tour.hold=1.2; tour.playing=true; showCaption(0); bPlay.textContent='⏸'; } }
 function tourUpdate(dt){
-  if(tour.playing){ if(tour.hold>0){ tour.hold-=dt; } else tour.t+=dt/tour.seg; if(tour.t>=1){ tour.t=0; tour.hold=2.2; tour.i++; if(tour.i>=R.length-1){ tour.i=R.length-1; tour.playing=false; bPlay.textContent='↻ Replay'; bPlay.onclick=()=>{ tour.i=0; tour.t=0; tour.playing=true; bPlay.textContent='⏸ Pause'; bPlay.onclick=playBtn; showCaption(0); }; } showCaption(tour.i); } }
+  if(opening.on){ openingUpdate(dt); return; }
+  if(tour.playing){ if(tour.hold>0){ tour.hold-=dt; } else tour.t+=dt/tour.seg; if(tour.t>=1){ tour.t=0; tour.hold=2.2; tour.i++; if(tour.i>=R.length-1){ tour.i=R.length-1; tour.playing=false; bPlay.textContent='↻'; cineT.textContent='MARUDHA FARMS'; cineS.textContent='Thank you for visiting'; cine.style.opacity=1; bPlay.onclick=()=>{ cine.style.opacity=0; bPlay.onclick=playBtn; startOpening(); }; } showCaption(tour.i); } }
   const i=tour.i, n=R.length-1; const u=(i+ease(tour.t))/n;
   camera.position.lerp(curve.getPoint(Math.min(u,1)), 1-Math.pow(0.001,dt));
   const a=R[i], b=R[Math.min(i+1,n)]; const k=ease(tour.t);
@@ -813,9 +844,11 @@ function tourUpdate(dt){
 }
 
 // ---------- intro ----------
-bStart.onclick=()=>{ intro.style.display='none'; setMode('explore'); camYaw=Math.PI; toast('Walk through the gate — the estate is yours to explore'); };
+bStartDrive.onclick=()=>{ intro.style.display='none'; setMode('drive'); soundOn(true,false); toast('W = gas · A D steer · drive through the gate'); };
+bStartTop.onclick=()=>{ intro.style.display='none'; setMode('top'); };
 document.getElementById('loader').style.display='none';
-bStartTour.onclick=()=>{ intro.style.display='none'; setMode('tour'); };
+bStartTour.onclick=()=>{ intro.style.display='none'; startOpening(); };
+bMute.onclick=()=>{ if(audio){ soundOn(false); bMute.textContent='🔇'; snd.checked=false; } else { soundOn(true,true); bMute.textContent='🔊'; snd.checked=true; } };
 
 // ---------- loop ----------
 function resize(){ const w=innerWidth,h=innerHeight; renderer.setSize(w,h,false); composer.setSize(w,h); bloom.setSize(w,h); camera.aspect=w/h; camera.updateProjectionMatrix(); }
@@ -843,7 +876,7 @@ function loop(){
   // beacons bob
   { const show=(mode==='explore'||mode==='drive'); for(const k in beacons){ beacons[k].b.visible=show; beacons[k].cone.visible=show; beacons[k].cone.position.y=9+Math.sin(now*2)*0.6; beacons[k].cone.rotation.y=now; } }
   if(toastT>0){ toastT-=dt; if(toastT<=0) document.getElementById('toast').style.opacity=0; }
-  { const k=2*Math.tan(camera.fov*Math.PI/360); for(const s of labels){ const d=s.position.distanceTo(camera.position); let vis = d < (s.userData.near||2000) && d > (s.userData.far||0); if(mode==='tour') vis = vis && s.userData.big && camera.position.y>22 && d>60; if(mode==='attract') vis = vis && s.userData.big; s.visible=vis; if(vis){ const h=d*k*s.userData.frac; s.scale.set(s.userData.aspect*h, h, 1); } } }
+  { const k=2*Math.tan(camera.fov*Math.PI/360); for(const s of labels){ const d=s.position.distanceTo(camera.position); let vis = d < (s.userData.near||2000) && d > (s.userData.far||0); if(mode==='tour') vis = vis && s.userData.big && camera.position.y>22 && d>60; if(mode==='attract') vis = vis && s.userData.big; if(mode==='explore'||mode==='drive') vis = vis && (s.userData.big ? d<140 : s.userData.mid ? d<45 : d<14); if(mode==='fly'||mode==='top') vis = vis && (s.userData.big || (s.userData.mid && d<160)); s.visible=vis; if(vis){ const h=d*k*s.userData.frac; s.scale.set(s.userData.aspect*h, h, 1); } } }
   if((frame++%5)===0){ const dir=new THREE.Vector3(); if(mode==='explore'){ dir.set(Math.sin(player.yaw),0,Math.cos(player.yaw)); drawMini(player.x,player.z,dir); } else if(mode==='drive'){ dir.set(Math.sin(veh.h),0,Math.cos(veh.h)); drawMini(veh.x,veh.z,dir); } else { camera.getWorldDirection(dir); drawMini(camera.position.x,camera.position.z,dir); } }
   { const fx = mode==='drive'?veh.x: mode==='explore'?player.x: camera.position.x+camera.getWorldDirection(new THREE.Vector3()).x*40; const fz = mode==='drive'?veh.z: mode==='explore'?player.z: camera.position.z+camera.getWorldDirection(new THREE.Vector3()).z*40; updateShadowFocus(Math.max(-60,Math.min(BX+60,fx)), Math.max(-60,Math.min(BZ+80,fz))); }
   if(HQ) composer.render(); else renderer.render(scene,camera);
