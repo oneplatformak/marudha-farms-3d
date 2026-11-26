@@ -4,6 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Marudha Farms — Explore the Estate in 3D</title>
+<meta name="description" content="Walk, drive and fly through Marudha Farms: an integrated agricultural estate with farmland, forests, goat farm, worker housing and a private farmhouse. Interactive 3D model.">
+<meta property="og:title" content="Marudha Farms — 3D estate walkthrough">
+<meta property="og:description" content="Guided cinematic tour, walk and drive modes, day/night. Conceptual 3D model of the estate master plan.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://oneplatformak.github.io/marudha-farms-3d/">
+<meta property="og:image" content="https://oneplatformak.github.io/marudha-farms-3d/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2714%27 fill=%27%232f6b2f%27/%3E%3Ctext x=%2732%27 y=%2744%27 font-size=%2734%27 text-anchor=%27middle%27 font-family=%27Georgia%27 fill=%27%23f3e9c9%27%3EM%3C/text%3E%3C/svg%3E">
 <meta name="description" content="Marudha Farms — walk, drive and fly through the whole agricultural estate and farmhouse in 3D.">
 <meta property="og:title" content="Marudha Farms — Explore the Estate in 3D">
 <meta property="og:description" content="Open-world 3D visualisation of the Marudha Farms agricultural estate & private farmhouse.">
@@ -149,7 +157,7 @@
   </div>
 </div>
 
-<div id="info" class="ui"><button class="x" id="infoX">✕</button><span class="tag" id="infoTag"></span><h3 id="infoTitle"></h3><p id="infoText"></p></div>
+<div id="info" class="ui"><button class="x" id="infoX">✕</button><span class="tag" id="infoTag"></span><h3 id="infoTitle"></h3><p id="infoText"></p><button id="infoFly" class="accent" style="margin-top:6px">✈ Fly here</button></div>
 
 <div id="objectives" class="ui"><h3>Discover every zone</h3><div id="objList"></div><div class="small" id="objCount"></div></div>
 
@@ -163,7 +171,7 @@
     <button id="bPlay" class="accent">⏸</button>
     <button id="bPrev">⏮</button><button id="bNext">⏭</button>
     <select id="jump"></select>
-    <button id="bMute">🔊</button>
+    <button id="bMute" title="Sound">🔇</button>
     <input id="speed" type="range" min="0.5" max="2.5" step="0.25" value="1" style="width:70px" title="speed">
   </div>
   <div id="prog" style="display:none"><i></i></div>
@@ -191,7 +199,7 @@
 <div id="invest" class="modal"><div class="card"><h2>Estate overview</h2><div id="investBody"></div><p class="small">Areas from the conceptual model (1 sketch px = 15 cm, provisional). "Proposed" items are additions beyond the original sketch.</p><button id="bInvestClose">Close</button></div></div>
 <div id="stats" class="modal"><div class="card"><h2>Zone areas (provisional)</h2><div id="statsBody"></div><button id="bStatsClose">Close</button></div></div>
 
-<script src="./estate-data.js?v=1795724676"></script>
+<script src="./estate-data.js?v=1795725152"></script>
 <script type="importmap">{"imports":{"three":"./three.module.js"}}</script>
 <script type="module">
 import * as THREE from 'three';
@@ -348,7 +356,7 @@ const MACRO={grass:14,soil:4,dirt:5,asphalt:6};
 const manager=new THREE.LoadingManager(); const texLoader=new THREE.TextureLoader(manager);
 const PBR={ grass:['tex/grass',5], dry:['tex/dry',5], soil:['tex/soil',3], plough:['tex/plough',4], dirt:['tex/dirt',3.5], asphalt:['tex/asphalt',5], roof:['tex/roof',2.2], plaster:['tex/plaster',3], stone:['tex/stone',2.4], brick:['tex/brick',2], concrete:['tex/concrete',3], tin:['tex/tin',1.8], wood:['tex/wood',2], planks:['tex/planks',2], bark:['tex/bark',1.2], leaves:['tex/leaves',2.5], tile:['tex/tile',1.6] };
 const pbrCache={};
-function pbr(name){ if(pbrCache[name]) return pbrCache[name]; const [dir,m]=PBR[name]; const mk=(f,srgb)=>{ const t=texLoader.load(dir+'/'+f+'.webp?v=1795724676'); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(1/m,1/m); t.anisotropy=8; if(srgb) t.colorSpace=THREE.SRGBColorSpace; return t; }; return pbrCache[name]={map:mk('d',true), normalMap:mk('n',false), roughnessMap:mk('r',false)}; }
+function pbr(name){ if(pbrCache[name]) return pbrCache[name]; const [dir,m]=PBR[name]; const mk=(f,srgb)=>{ const t=texLoader.load(dir+'/'+f+'.webp?v=1795725152'); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(1/m,1/m); t.anisotropy=8; if(srgb) t.colorSpace=THREE.SRGBColorSpace; return t; }; return pbrCache[name]={map:mk('d',true), normalMap:mk('n',false), roughnessMap:mk('r',false)}; }
 window.__loadManager=manager;
 function addSway(m, amp, byUv){ m.onBeforeCompile=sh=>{ sh.uniforms.time=window.__time; sh.vertexShader=('uniform float time;\n'+sh.vertexShader).replace('#include <begin_vertex>','#include <begin_vertex>\n{ vec3 wp=position;\n#ifdef USE_INSTANCING\nwp=(instanceMatrix*vec4(position,1.0)).xyz;\n#endif\nfloat sw=sin(time*1.3+wp.x*0.11+wp.z*0.07)+0.45*sin(time*2.4+wp.z*0.23+wp.x*0.05); float hf='+(byUv?'uv.y':'smoothstep(1.2,6.0,position.y)')+'; transformed.x+=sw*'+amp.toFixed(3)+'*hf; transformed.z+=sw*'+(amp*0.4).toFixed(3)+'*hf; }'); }; m.customProgramCacheKey=()=>'sway'+amp+(byUv?'u':'p'); m.userData.hook=(mm)=>addSway(mm,amp,byUv); }
 function addMacro(m,tile,blend){ m.onBeforeCompile=sh=>{ sh.uniforms.macroMap={value:TEX.macro()}; sh.uniforms.macroScale={value:tile/170}; sh.uniforms.blendMap={value:blend?pbr('dry').map:TEX.macro()}; sh.fragmentShader=sh.fragmentShader.replace('uniform vec3 diffuse;','uniform vec3 diffuse; uniform sampler2D macroMap; uniform sampler2D blendMap; uniform float macroScale;').replace('#include <map_fragment>','#include <map_fragment>\n#ifdef USE_MAP\n{ float mc=texture2D(macroMap, vMapUv*macroScale).r; float mc2=texture2D(macroMap, vMapUv*macroScale*4.7+0.37).r; float mc3=texture2D(macroMap, vMapUv*macroScale*2.3+0.71).r;'+(blend?' vec3 bl=texture2D(blendMap, vMapUv*1.07).rgb*diffuse; diffuseColor.rgb=mix(diffuseColor.rgb, bl, smoothstep(0.52,0.8,mc3)*0.5);':'')+' diffuseColor.rgb*= mix(vec3(0.74), vec3(1.2), mc)*mix(vec3(0.9),vec3(1.1),mc2); }\n#endif'); }; m.customProgramCacheKey=()=>'macro'+(blend?'b':''); m.userData.hook=(mm)=>addMacro(mm,tile,blend); }
@@ -962,7 +970,7 @@ function exploreUpdate(dt){
   } else { player.moving=0; }
   const py=heightAt(player.x,player.z); person.g.position.set(player.x,py,player.z); person.g.rotation.y=player.yaw;
   const sw=player.moving? Math.sin(player.t)*(player.moving===2?0.9:0.6):0; person.legL.rotation.x=sw; person.legR.rotation.x=-sw; person.armL.rotation.x=-sw; person.armR.rotation.x=sw;
-  followCamera(player.x, py+1.5+(player.moving?Math.sin(player.t)*0.03:0), player.z, dt);
+  followCamera(player.x, py+1.5, player.z, dt);
   act.style.display = nearJeep()? 'block':'none'; bAct.textContent='🚙 Get in the jeep (E)';
   updateZone(player.x,player.z);
 }
@@ -1033,7 +1041,8 @@ function padStart(a){ const ac=a.ac; const out=ac.createGain(); out.gain.value=0
     a.padTimer=setTimeout(play, 8000); };
   a.pad={out}; play(); }
 
-bShare.onclick=()=>{ try{ navigator.clipboard.writeText(location.href).then(()=>toast('Link copied — share it with anyone'),()=>toast(location.href)); }catch(e){ toast(location.href); } };
+const slug=n=>n.toLowerCase().replace(/\(.*?\)/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+bShare.onclick=()=>{ const u=new URL(location.href); u.search=''; if(mode==='tour') u.searchParams.set('stop',slug(R[tour.i].name)); const link=u.toString(); try{ navigator.clipboard.writeText(link).then(()=>toast('Link copied — share it with anyone'),()=>toast(link)); }catch(e){ toast(link); } };
 bShot.onclick=()=>{ renderer.render(scene,camera); try{ const a=document.createElement('a'); a.download='marudha-farms-3d.png'; a.href=canvas.toDataURL('image/png'); a.click(); toast('Photo saved'); }catch(e){ toast('Photo not available in this viewer'); } };
 // ---- investor overview ----
 const totalArea=D.rooms.find(r=>r.depth===0).area;
@@ -1050,8 +1059,8 @@ canvas.addEventListener('pointerup',e=>{ if(!downPos||Math.hypot(e.clientX-downP
   ray.setFromCamera(new THREE.Vector2(e.clientX/innerWidth*2-1, -(e.clientY/innerHeight)*2+1), camera); const hit=new THREE.Vector3(); if(!ray.ray.intersectPlane(groundPlane,hit)) return;
   let best=null; for(const r of D.rooms){ if(r.depth===0) continue; if(pip(hit.x,hit.z,r.poly)&&(!best||r.area<best.area)) best=r; }
   if(!best){ info.style.display='none'; return; }
-  const g=groupOf(best.name)||'Estate'; infoTag.textContent=g; infoTitle.textContent=best.name.replace(/ \(.*\)/,''); infoText.textContent=(best.note||'')+(best.note?' ':'')+'Approx. area: '+fmt(best.area)+'.'; info.style.display='block'; });
-infoX.onclick=()=>info.style.display='none'; bTour.onclick=()=>{ if(mode==='attract') startOpening(); else setMode('tour'); }; bFly.onclick=()=>setMode('fly'); bTop.onclick=()=>setMode('top');
+  const g=groupOf(best.name)||'Estate'; infoZone=best; infoTag.textContent=g; infoTitle.textContent=best.name.replace(/ \(.*\)/,''); infoText.textContent=(best.note||'')+(best.note?' ':'')+'Approx. area: '+fmt(best.area)+'.'; info.style.display='block'; });
+infoX.onclick=()=>info.style.display='none'; let infoZone=null; infoFly.onclick=()=>{ if(!infoZone) return; const r=infoZone; info.style.display='none'; setMode('fly'); const h=Math.max(14,Math.sqrt(r.area)*0.9); flyTo(new THREE.Vector3(r.c[0], h, r.c[1]+h*0.9), new THREE.Vector3(r.c[0],0,r.c[1]), 1.6); }; bTour.onclick=()=>{ if(mode==='attract') startOpening(); else setMode('tour'); }; bFly.onclick=()=>setMode('fly'); bTop.onclick=()=>setMode('top');
 
 bObj.onclick=()=>{ objectives_el.style.display=objectives_el.style.display==='block'?'none':'block'; };
 const objectives_el=document.getElementById('objectives');
@@ -1076,7 +1085,7 @@ bPlay.onclick=playBtn; bPrev.onclick=()=>gotoStop(tour.i-1); bNext.onclick=()=>g
 document.getElementById('speed').oninput=e=>{ tour.seg=2.6/(+e.target.value); };
 const ease=t=>t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
 const opening={on:false,t:0,dur:14}; window.__dbg={tour,opening,get mode(){return mode;},setMode,gotoStop:(i)=>gotoStop(i),gtao,bloom,composer,camera,get HQ(){return HQ;},setQuality,get quality(){return quality;}};
-function startOpening(){ setMode('tour'); tour.playing=false; opening.on=true; opening.t=0; fade.style.transition='none'; fade.style.opacity=1; requestAnimationFrame(()=>{ fade.style.transition='opacity 2.4s ease'; fade.style.opacity=0; }); cineT.textContent='MARUDHA FARMS'; cineS.textContent='Integrated agricultural estate · private farmhouse'; capTitle.textContent='Marudha Farms'; capText.textContent='A new morning on the estate'; capChips.innerHTML=''; soundOn(true,true); bMute.textContent='🔊'; }
+function startOpening(){ setMode('tour'); tour.playing=false; opening.on=true; opening.t=0; fade.style.transition='none'; fade.style.opacity=1; requestAnimationFrame(()=>{ fade.style.transition='opacity 2.4s ease'; fade.style.opacity=0; }); cineT.textContent='MARUDHA FARMS'; cineS.textContent='Integrated agricultural estate · private farmhouse'; capTitle.textContent='Marudha Farms'; capText.textContent='A new morning on the estate'; capChips.innerHTML=''; if(audio) padStart(audio); }
 function openingUpdate(dt){ opening.t+=dt; const u=Math.min(1,opening.t/opening.dur); const k=u<0.5?2*u*u:1-Math.pow(-2*u+2,2)/2;
   const p0=new THREE.Vector3(184,62,340), p1=new THREE.Vector3(184,2.6,198); const l0=new THREE.Vector3(184,0,110), l1=new THREE.Vector3(184,3.2,150);
   camera.position.lerpVectors(p0,p1,k); camera.lookAt(new THREE.Vector3().lerpVectors(l0,l1,k));
@@ -1098,11 +1107,13 @@ function tourUpdate(dt){
 }
 
 // ---------- intro ----------
-bStartDrive.onclick=()=>{ intro.style.display='none'; setMode('drive'); soundOn(true,false); toast('W = gas · A D steer · drive through the gate'); };
+bStartDrive.onclick=()=>{ intro.style.display='none'; setMode('drive'); toast('W = gas · A D steer · drive through the gate'); };
 bStartTop.onclick=()=>{ intro.style.display='none'; setMode('top'); };
 { const lm=window.__loadManager; const bar=document.querySelector('#loadBar i'); let done=false; const finish=()=>{ if(done) return; done=true; document.getElementById('loader').style.display='none'; };
   lm.onProgress=(u,l,t)=>{ bar.style.width=Math.round(l/t*100)+'%'; document.getElementById('loadMsg').textContent='Loading textures '+l+' / '+t; }; lm.onLoad=finish; lm.onError=(u)=>console.warn('texture failed',u); setTimeout(finish,20000); if(!lm.isLoading) setTimeout(finish,300); }
 bStartTour.onclick=()=>{ intro.style.display='none'; startOpening(); };
+{ const sp=new URLSearchParams(location.search).get('stop'); if(sp){ const idx=R.findIndex(w=>slug(w.name)===sp); if(idx>=0){ intro.style.display='none'; setSun(8.6); document.getElementById('sun').value=8.6; setMode('tour'); gotoStop(idx); tour.playing=false; bPlay.textContent='▶'; const w=R[idx]; camera.position.set(w.p[0],w.h,w.p[1]); camera.lookAt(w.look[0],w.look[1],w.look[2]); } } }
+const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches; if(reduceMotion){ grade.uniforms.grain.value=0; }
 bMute.onclick=()=>{ if(audio){ soundOn(false); bMute.textContent='🔇'; snd.checked=false; } else { soundOn(true,true); bMute.textContent='🔊'; snd.checked=true; } };
 
 // ---------- loop ----------
@@ -1110,7 +1121,7 @@ function resize(){ const w=innerWidth,h=innerHeight; renderer.setSize(w,h,false)
 addEventListener('resize',resize); resize();
 const clock=new THREE.Clock(); let frame=0;
 function loop(){
-  const dt=Math.min(clock.getDelta(),0.05); const now=clock.elapsedTime; window.__time.value=now; grade.uniforms.time.value=now;
+  const dt=Math.min(clock.getDelta(),0.05); const now=clock.elapsedTime; if(!reduceMotion) window.__time.value=now; grade.uniforms.time.value=now;
   if(flyAnim){ flyAnim.t+=dt/flyAnim.dur; const k=ease(Math.min(flyAnim.t,1)); camera.position.lerpVectors(flyAnim.p0,flyAnim.p1,k); const l=new THREE.Vector3().lerpVectors(flyAnim.l0,flyAnim.l1,k); camera.lookAt(l); if(orbit.enabled) orbit.target.copy(l); if(flyAnim.t>=1) flyAnim=null; }
   else if(mode==='attract') attractUpdate(dt);
   else if(mode==='tour') tourUpdate(dt);
