@@ -208,6 +208,7 @@ function setSun(hour){
   if(window.__glass){ window.__glass.emissive.set('#ffd27a'); window.__glass.emissiveIntensity=night*1.2; }
   if(window.__lampMats) for(const m of window.__lampMats) m.emissiveIntensity=0.15+night*1.6;
   if(window.__stars) window.__stars.material.opacity=night;
+  scene.environmentIntensity=0.02+0.33*day;
 }
 setSun(10);
 document.getElementById('sun').addEventListener('input', e=>setSun(+e.target.value));
@@ -676,7 +677,7 @@ bShare.onclick=()=>{ try{ navigator.clipboard.writeText(location.href).then(()=>
 bShot.onclick=()=>{ renderer.render(scene,camera); try{ const a=document.createElement('a'); a.download='marudha-farms-3d.png'; a.href=canvas.toDataURL('image/png'); a.click(); toast('Photo saved'); }catch(e){ toast('Photo not available in this viewer'); } };
 // ---- investor overview ----
 const totalArea=D.rooms.find(r=>r.depth===0).area;
-function groupArea(rx){ return D.rooms.filter(r=>r.depth===1&&rx.test(r.name)).reduce((a,r)=>a+r.area,0); }
+function groupArea(rx){ return D.rooms.filter(r=>r.depth===1&&rx.test(r.name)).reduce((a,r)=>a+r.area,0) + D.buildings.filter(b=>rx.test(b.name)).reduce((a,b)=>a+Math.abs((b.box[2]-b.box[0])*(b.box[3]-b.box[1])),0); }
 const breakdown=[['Forests (pine, teak, strip)',/Pine|Teak|Forest Strip/],['Farmland (3 blocks)',/Farm Land|Farming/],['Farmhouse compound (house, pool, coconut, parking)',/Farmhouse Compound/],['Goat farm (shed + paddock)',/Goat Farm Shed|Paddock/],['Estate roads',/Road/],['Farm office compound',/Office Compound/],['Labour quarters',/Labour Quarters/],['Central well',/Agricultural Water Well/]].map(([n,rx])=>[n,groupArea(rx)]);
 const used=breakdown.reduce((a,b)=>a+b[1],0); breakdown.push(['Open agricultural land (future expansion)', Math.max(0,totalArea-used)]);
 function fmt(a){ return a>=10000? (a/10000).toFixed(2)+' ha' : Math.round(a).toLocaleString()+' m²'; }
