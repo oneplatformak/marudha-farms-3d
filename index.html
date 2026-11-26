@@ -85,6 +85,7 @@
   .bar b{min-width:150px}
   .bar span{min-width:92px;text-align:right;white-space:nowrap}
   #loader{position:fixed;inset:0;z-index:30;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#1f2a1d;color:#fbf6e6;font-size:15px;letter-spacing:1px}
+  #loadBar{width:220px;height:4px;background:rgba(255,255,255,.18);border-radius:2px;margin-top:14px;overflow:hidden}#loadBar i{display:block;height:100%;width:0;background:#e07b39;transition:width .3s}
   #loader b{font-family:"Playfair Display",serif;font-size:32px;letter-spacing:4px;color:#cde6a8;margin-bottom:10px}
   #joy{left:24px;bottom:150px;width:120px;height:120px;border-radius:50%;background:rgba(251,246,230,.35);border:2px solid rgba(251,246,230,.7);display:none}
   #joy i{position:absolute;left:35px;top:35px;width:50px;height:50px;border-radius:50%;background:rgba(251,246,230,.9)}
@@ -182,12 +183,12 @@
   </div>
 </div>
 
-<div id="loader"><b>MARUDHA FARMS</b>Building the 3D estate…</div>
+<div id="loader"><b>MARUDHA FARMS</b><span id="loadMsg">Building the 3D estate…</span><div id="loadBar"><i></i></div></div>
 <div id="plan" class="modal"><div class="card" style="padding:10px"><img src="masterplan.jpg" alt="Master plan" style="width:100%;border-radius:10px;display:block"><div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px"><span class="small">Conceptual site plan · not to scale</span><button id="bPlanClose">Close</button></div></div></div>
 <div id="invest" class="modal"><div class="card"><h2>Estate overview</h2><div id="investBody"></div><p class="small">Areas from the conceptual model (1 sketch px = 15 cm, provisional). "Proposed" items are additions beyond the original sketch.</p><button id="bInvestClose">Close</button></div></div>
 <div id="stats" class="modal"><div class="card"><h2>Zone areas (provisional)</h2><div id="statsBody"></div><button id="bStatsClose">Close</button></div></div>
 
-<script src="./estate-data.js?v=1795722549"></script>
+<script src="./estate-data.js?v=1795722823"></script>
 <script type="importmap">{"imports":{"three":"./three.module.js"}}</script>
 <script type="module">
 import * as THREE from 'three';
@@ -328,7 +329,13 @@ const NSTR={grass:1.6,soil:2.4,dirt:1.3,asphalt:1.1,concrete:0.9,plaster:0.5,bri
 function normalTex(name){ const key='N_'+name; if(texCache.has(key)) return texCache.get(key); TEX[name](); const src=texCanvas[name]; const s=src.width; const img=src.getContext('2d').getImageData(0,0,s,s).data; const out=document.createElement('canvas'); out.width=out.height=s; const og=out.getContext('2d'); const o=og.createImageData(s,s); const st=NSTR[name]||1; const lum=new Float32Array(s*s); for(let i=0;i<s*s;i++) lum[i]=(img[i*4]*0.3+img[i*4+1]*0.59+img[i*4+2]*0.11)/255;
   for(let y=0;y<s;y++){ const yu=((y-1+s)%s)*s, yd=((y+1)%s)*s, yy=y*s; for(let x=0;x<s;x++){ const xl=(x-1+s)%s, xr=(x+1)%s; const dx=(lum[yy+xr]-lum[yy+xl])*st, dy=(lum[yd+x]-lum[yu+x])*st; const nx=-dx, ny=dy, nz=1; const len=Math.hypot(nx,ny,nz); const i=(yy+x)*4; o.data[i]=(nx/len*0.5+0.5)*255; o.data[i+1]=(ny/len*0.5+0.5)*255; o.data[i+2]=(nz/len*0.5+0.5)*255; o.data[i+3]=255; } }
   og.putImageData(o,0,0); const t=new THREE.CanvasTexture(out); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.copy(TEX[name]().repeat); t.anisotropy=8; texCache.set(key,t); return t; }
-const MACRO={grass:18,soil:4,dirt:5,asphalt:6};
+const MACRO={grass:14,soil:4,dirt:5,asphalt:6};
+// ---------- PBR texture sets (Poly Haven, CC0) — albedo(+AO), normal (OpenGL), roughness ----------
+const manager=new THREE.LoadingManager(); const texLoader=new THREE.TextureLoader(manager);
+const PBR={ grass:['tex/grass',5], dry:['tex/dry',5], soil:['tex/soil',3], plough:['tex/plough',4], dirt:['tex/dirt',3.5], asphalt:['tex/asphalt',5], roof:['tex/roof',2.2], plaster:['tex/plaster',3], stone:['tex/stone',2.4], brick:['tex/brick',2], concrete:['tex/concrete',3], tin:['tex/tin',1.8], wood:['tex/wood',2], planks:['tex/planks',2], bark:['tex/bark',1.2], leaves:['tex/leaves',2.5], tile:['tex/tile',1.6] };
+const pbrCache={};
+function pbr(name){ if(pbrCache[name]) return pbrCache[name]; const [dir,m]=PBR[name]; const mk=(f,srgb)=>{ const t=texLoader.load(dir+'/'+f+'.webp'); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(1/m,1/m); t.anisotropy=8; if(srgb) t.colorSpace=THREE.SRGBColorSpace; return t; }; return pbrCache[name]={map:mk('d',true), normalMap:mk('n',false), roughnessMap:mk('r',false)}; }
+window.__loadManager=manager;
 function addSway(m, amp, byUv){ m.onBeforeCompile=sh=>{ sh.uniforms.time=window.__time; sh.vertexShader=('uniform float time;\n'+sh.vertexShader).replace('#include <begin_vertex>','#include <begin_vertex>\n{ vec3 wp=position;\n#ifdef USE_INSTANCING\nwp=(instanceMatrix*vec4(position,1.0)).xyz;\n#endif\nfloat sw=sin(time*1.3+wp.x*0.11+wp.z*0.07)+0.45*sin(time*2.4+wp.z*0.23+wp.x*0.05); float hf='+(byUv?'uv.y':'smoothstep(1.2,6.0,position.y)')+'; transformed.x+=sw*'+amp.toFixed(3)+'*hf; transformed.z+=sw*'+(amp*0.4).toFixed(3)+'*hf; }'); }; m.customProgramCacheKey=()=>'sway'+amp+(byUv?'u':'p'); }
 function addMacro(m,tile){ m.onBeforeCompile=sh=>{ sh.uniforms.macroMap={value:TEX.macro()}; sh.uniforms.macroScale={value:tile/170}; sh.fragmentShader=sh.fragmentShader.replace('uniform vec3 diffuse;','uniform vec3 diffuse; uniform sampler2D macroMap; uniform float macroScale;').replace('#include <map_fragment>','#include <map_fragment>\n#ifdef USE_MAP\n{ float mc=texture2D(macroMap, vMapUv*macroScale).r; float mc2=texture2D(macroMap, vMapUv*macroScale*4.7+0.37).r; diffuseColor.rgb*= mix(vec3(0.72), vec3(1.22), mc)*mix(vec3(0.9),vec3(1.1),mc2); }\n#endif'); }; m.customProgramCacheKey=()=>'macro'; }
 
@@ -338,7 +345,7 @@ function mat(color, opts={}){
   const key = color+JSON.stringify(opts);
   if(!matCache.has(key)){
     const o=Object.assign({color:new THREE.Color(color), roughness:0.85, metalness:0.0}, opts);
-    let name=null; if(typeof o.map==='string'){ name=o.map; o.map=TEX[name](); if(NSTR[name] && !('normalMap' in o)){ o.normalMap=normalTex(name); o.normalScale=new THREE.Vector2(0.9,0.9); } }
+    let name=null; if(typeof o.map==='string'){ name=o.map; if(PBR[name]){ const t=pbr(name); o.map=t.map; if(!('normalMap' in o)){ o.normalMap=t.normalMap; o.normalScale=new THREE.Vector2(1,1); } o.roughnessMap=t.roughnessMap; o.roughness=1; } else { o.map=TEX[name](); if(NSTR[name] && !('normalMap' in o)){ o.normalMap=normalTex(name); o.normalScale=new THREE.Vector2(0.9,0.9); } } }
     const m = new THREE.MeshStandardMaterial(o);
     if(name && MACRO[name]) addMacro(m, MACRO[name]);
     matCache.set(key, m);
@@ -434,11 +441,12 @@ const fieldTex=(function(){ const S=1024, data=new Uint8Array(S*S*4);
     col.push(c.r,c.g,c.b); }
   for(let j=0;j<N;j++) for(let i=0;i<N;i++){ const a=j*(N+1)+i, b=a+1, cc=a+N+1, d=cc+1; idx.push(a,cc,b, b,cc,d); }
   const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2)); g.setAttribute('color',new THREE.Float32BufferAttribute(col,3)); g.setIndex(idx); g.computeVertexNormals();
-  const tm=new THREE.MeshStandardMaterial({map:TEX.grass(), normalMap:normalTex('grass'), normalScale:new THREE.Vector2(0.8,0.8), roughness:1, vertexColors:true});
-  tm.onBeforeCompile=sh=>{ sh.uniforms.fieldMap={value:fieldTex}; sh.uniforms.soilMap={value:TEX.soil()}; sh.uniforms.dryMap={value:TEX.dirt()}; sh.uniforms.macroMap={value:TEX.macro()}; sh.uniforms.fieldOrigin={value:FORG};
+  const gp=pbr('grass'), pp=pbr('plough'), dp=pbr('dry');
+  const tm=new THREE.MeshStandardMaterial({map:gp.map, normalMap:gp.normalMap, roughnessMap:gp.roughnessMap, normalScale:new THREE.Vector2(0.9,0.9), roughness:1, vertexColors:true});
+  tm.onBeforeCompile=sh=>{ sh.uniforms.fieldMap={value:fieldTex}; sh.uniforms.soilMap={value:pp.map}; sh.uniforms.dryMap={value:dp.map}; sh.uniforms.macroMap={value:TEX.macro()}; sh.uniforms.fieldOrigin={value:FORG};
     sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nvarying vec2 vWP;').replace('#include <project_vertex>','#include <project_vertex>\nvWP=(modelMatrix*vec4(transformed,1.0)).xz;');
     sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nvarying vec2 vWP; uniform sampler2D fieldMap; uniform sampler2D soilMap; uniform sampler2D dryMap; uniform sampler2D macroMap; uniform vec2 fieldOrigin;')
-      .replace('#include <map_fragment>','#include <map_fragment>\n{ vec4 f=texture2D(fieldMap,(vWP-fieldOrigin)/2800.0); vec3 soil=texture2D(soilMap,vWP/4.0).rgb; vec3 dry=texture2D(dryMap,vWP/5.0).rgb*vec3(1.0,0.9,0.58); float mc=texture2D(macroMap,vWP/170.0).r; float mc2=texture2D(macroMap,vWP/37.0+0.3).r; vec3 gr=diffuseColor.rgb; float ws=max(0.001,f.r+f.g+f.b); vec3 col=(gr*f.r+soil*f.g+dry*f.b)/ws; col=mix(col, soil*0.72, smoothstep(0.25,0.6,f.a)); col*=mix(0.74,1.2,mc)*mix(0.92,1.08,mc2); diffuseColor.rgb=col; }'); };
+      .replace('#include <map_fragment>','#include <map_fragment>\n{ vec4 f=texture2D(fieldMap,(vWP-fieldOrigin)/2800.0); vec3 soil=texture2D(soilMap,vWP/4.0).rgb; vec3 dry=texture2D(dryMap,vWP/5.0).rgb; float mc=texture2D(macroMap,vWP/170.0).r; float mc2=texture2D(macroMap,vWP/37.0+0.3).r; vec3 gr=diffuseColor.rgb; float ws=max(0.001,f.r+f.g+f.b); vec3 col=(gr*f.r+soil*f.g+dry*f.b)/ws; col=mix(col, soil*0.72, smoothstep(0.25,0.6,f.a)); col*=mix(0.74,1.2,mc)*mix(0.92,1.08,mc2); diffuseColor.rgb=col; }'); };
   tm.customProgramCacheKey=()=>'terrain';
   const m=new THREE.Mesh(g, tm); m.position.y=-0.03; m.receiveShadow=true; world.add(m);
 })();
@@ -448,8 +456,8 @@ function zoneTex(r){ const n=r.name; if(/Parking/.test(n)) return 'asphalt'; if(
 for(const r of D.rooms){
   const shape=new THREE.Shape(r.poly.map(p=>new THREE.Vector2(p[0],-p[1])));
   const geo=new THREE.ShapeGeometry(shape);
-  let t=zoneTex(r); let tint = t==='soil'?'#d9b48a':(t==='asphalt'?'#c4c4c4':'#ffffff');
-  if(t==='grass'){ if(/Pine|Teak|Forest Strip/.test(r.name)){ t='dirt'; tint='#6e5e44'; } else if(/Compound|Paddock|Office/.test(r.name)) tint='#c6d094'; else if(r.depth===0) tint='#b2bd7a'; else tint='#'+new THREE.Color(r.color).lerp(new THREE.Color('#aab46e'),0.75).getHexString(); }
+  let t=zoneTex(r); let tint = t==='soil'?'#ffffff':(t==='asphalt'?'#d0d0d0':'#ffffff');
+  if(t==='grass'){ if(/Pine|Teak|Forest Strip/.test(r.name)){ t='leaves'; tint='#ffffff'; } else if(/Compound|Paddock|Office/.test(r.name)) tint='#d4e6bc'; else if(r.depth===0) tint='#e2e8cf'; else tint='#'+new THREE.Color(r.color).lerp(new THREE.Color('#e0e6cc'),0.8).getHexString(); }
   const m=new THREE.Mesh(geo, mat(tint,{roughness:1,side:THREE.DoubleSide,map:t}));
   m.rotation.x=-Math.PI/2; m.position.y=0.02+r.depth*0.012; m.receiveShadow=true; world.add(m);
 }
@@ -539,8 +547,8 @@ function leafy(parent,x,z,h,c='#3f7a2e',w=1){
 // ---------- surroundings: approach road, avenue, power line, groves, hedgerows ----------
 (function(){
   const ax=184, z0=BZ+0.3, z1=BZ+330;
-  box(world, 7.4, 0.06, z1-z0, ax, 0.03, (z0+z1)/2, '#c4c4c4', {map:'asphalt'}, false);
-  for(const sx of[-1,1]) box(world, 1.0, 0.03, z1-z0+2, ax+sx*4.0, 0.02, (z0+z1)/2, '#8f8d74', {map:'dirt'}, false);
+  box(world, 7.4, 0.06, z1-z0, ax, 0.03, (z0+z1)/2, '#d0d0d0', {map:'asphalt'}, false);
+  for(const sx of[-1,1]) box(world, 1.0, 0.03, z1-z0+2, ax+sx*4.0, 0.02, (z0+z1)/2, '#ffffff', {map:'dirt'}, false);
   for(let z=BZ+36; z<z1-20; z+=13){ for(const sx of [-1,1]){ leafy(world, ax+sx*(7.2+Math.random()*0.6), z+(Math.random()-0.5)*2, 7.5+Math.random()*2.5, jit('#3f7a2e',0.15), 1.15); } }
   // power line beside the avenue
   const poles=[]; for(let z=BZ+30; z<z1; z+=32){ const px=ax+11.5; const hp=9; cyl(world,0.13,0.17,hp,px,hp/2,z,'#9a9890',{map:'concrete'}); box(world,1.6,0.1,0.1,px,hp-0.3,z,'#5c5c5c'); for(const o of[-0.6,0,0.6]) cyl(world,0.05,0.05,0.25,px+o,hp-0.15,z,'#eee',{},false); poles.push([px,hp-0.05,z]); }
@@ -606,7 +614,7 @@ for(const it of D.items){
     case id==='deck_patio': flat(color,'wood'); break;
     case id==='patio_stone': flat('#ffffff','tile'); break;
     case id==='gravel_area'||id==='stepping_stones': flat('#ffffff','dirt'); break;
-    case id==='driveway': { const W = w>15 ? 9 : (w>10 ? 7 : w); box(g,W,0.05,d,0,0.025,0,'#c4c4c4',{map:'asphalt'},false); for(const sx of[-1,1]) box(g,1.0,0.03,d+1,sx*(W/2+0.45),0.015,0,'#8f8d74',{map:'dirt'},false); break; }
+    case id==='driveway': { const W = w>15 ? 9 : (w>10 ? 7 : w); box(g,W,0.05,d,0,0.025,0,'#d0d0d0',{map:'asphalt'},false); for(const sx of[-1,1]) box(g,1.0,0.03,d+1,sx*(W/2+0.45),0.015,0,'#ffffff',{map:'dirt'},false); break; }
     case id==='path_straight'||id==='path_wide': { if(w<0.3&&d<1){ flat(color); break; } if(w<0.3||d<0.3){ const L=Math.max(w,d); const c=cyl(g,0.045,0.045,L,0,0.045,0,'#2b2b2b',{roughness:0.55,metalness:0.1},false); if(w>d) c.rotation.z=Math.PI/2; else c.rotation.x=Math.PI/2; break; } flat('#ffffff','dirt'); break; }
     case id.startsWith('lawn'): flat('#9ac46e','grass'); break;
     case id==='fence_gate': { box(g,0.18,h,0.18,-w/2,h/2,0,'#3f3f3f'); box(g,0.18,h,0.18,w/2,h/2,0,'#3f3f3f'); for(let y=0.3;y<h;y+=0.35) box(g,w,0.05,0.05,0,y,0,color||'#3f3f3f'); for(let s=-w/2+0.3;s<w/2;s+=0.3) box(g,0.04,h*0.9,0.04,s,h*0.45,0,color||'#3f3f3f',{},false); break; }
@@ -997,7 +1005,8 @@ function tourUpdate(dt){
 // ---------- intro ----------
 bStartDrive.onclick=()=>{ intro.style.display='none'; setMode('drive'); soundOn(true,false); toast('W = gas · A D steer · drive through the gate'); };
 bStartTop.onclick=()=>{ intro.style.display='none'; setMode('top'); };
-document.getElementById('loader').style.display='none';
+{ const lm=window.__loadManager; const bar=document.querySelector('#loadBar i'); let done=false; const finish=()=>{ if(done) return; done=true; document.getElementById('loader').style.display='none'; };
+  lm.onProgress=(u,l,t)=>{ bar.style.width=Math.round(l/t*100)+'%'; document.getElementById('loadMsg').textContent='Loading textures '+l+' / '+t; }; lm.onLoad=finish; lm.onError=(u)=>console.warn('texture failed',u); setTimeout(finish,20000); if(!lm.isLoading) setTimeout(finish,300); }
 bStartTour.onclick=()=>{ intro.style.display='none'; startOpening(); };
 bMute.onclick=()=>{ if(audio){ soundOn(false); bMute.textContent='🔇'; snd.checked=false; } else { soundOn(true,true); bMute.textContent='🔊'; snd.checked=true; } };
 
