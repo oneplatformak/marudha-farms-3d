@@ -297,6 +297,10 @@ const boxGeo = new THREE.BoxGeometry(1,1,1);
 const cylGeo = new THREE.CylinderGeometry(1,1,1,10);
 const coneGeo = new THREE.ConeGeometry(1,1,9);
 const sphGeo = new THREE.IcosahedronGeometry(1,1);
+const canopyMats={};
+function canopyMat(c){ if(!canopyMats[c]) canopyMats[c]=new THREE.MeshStandardMaterial({map:TEX.canopy(), color:new THREE.Color(c), alphaTest:0.45, side:THREE.DoubleSide, roughness:0.9}); return canopyMats[c]; }
+const planeGeo=new THREE.PlaneGeometry(1,1);
+
 const world = new THREE.Group(); scene.add(world);
 function box(parent, w,h,d, x,y,z, color, opts, shadow=true){
   const m = new THREE.Mesh(boxGeo, mat(color, opts)); m.scale.set(w,h,d); m.position.set(x,y,z);
@@ -410,9 +414,6 @@ function palm(parent,x,z,h,bend=0,c='#3d8b37'){
   for(let i=0;i<3;i++){ sph(top,0.17, Math.cos(i*2.1)*0.28, -0.05, Math.sin(i*2.1)*0.28, '#6b4f2a'); }
   parent.add(g); return g;
 }
-const canopyMats={};
-function canopyMat(c){ if(!canopyMats[c]) canopyMats[c]=new THREE.MeshStandardMaterial({map:TEX.canopy(), color:new THREE.Color(c), alphaTest:0.45, side:THREE.DoubleSide, roughness:0.9}); return canopyMats[c]; }
-const planeGeo=new THREE.PlaneGeometry(1,1);
 function leafy(parent,x,z,h,c='#3f7a2e',w=1){
   const g=new THREE.Group(); g.position.set(x,0,z); g.rotation.y=Math.random()*6.28;
   cyl(g,0.18,0.3,h*0.5,0,h*0.25,0,'#5b3a1e',{map:'bark'});
