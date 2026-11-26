@@ -199,7 +199,7 @@
 <div id="invest" class="modal"><div class="card"><h2>Estate overview</h2><div id="investBody"></div><p class="small">Areas from the conceptual model (1 sketch px = 15 cm, provisional). "Proposed" items are additions beyond the original sketch.</p><button id="bInvestClose">Close</button></div></div>
 <div id="stats" class="modal"><div class="card"><h2>Zone areas (provisional)</h2><div id="statsBody"></div><button id="bStatsClose">Close</button></div></div>
 
-<script src="./estate-data.js?v=1795726455"></script>
+<script src="./estate-data.js?v=1795726763"></script>
 <script type="importmap">{"imports":{"three":"./three.module.js"}}</script>
 <script type="module">
 import * as THREE from 'three';
@@ -356,7 +356,7 @@ const MACRO={grass:14,soil:4,dirt:5,asphalt:6};
 const manager=new THREE.LoadingManager(); const texLoader=new THREE.TextureLoader(manager);
 const PBR={ grass:['tex/grass',5], dry:['tex/dry',5], soil:['tex/soil',3], plough:['tex/plough',4], dirt:['tex/dirt',3.5], asphalt:['tex/asphalt',5], roof:['tex/roof',2.2], plaster:['tex/plaster',3], stone:['tex/stone',2.4], brick:['tex/brick',2], concrete:['tex/concrete',3], tin:['tex/tin',1.8], wood:['tex/wood',2], planks:['tex/planks',2], bark:['tex/bark',1.2], leaves:['tex/leaves',2.5], tile:['tex/tile',1.6] };
 const pbrCache={};
-function pbr(name){ if(pbrCache[name]) return pbrCache[name]; const [dir,m]=PBR[name]; const mk=(f,srgb)=>{ const t=texLoader.load(dir+'/'+f+'.webp?v=1795726455'); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(1/m,1/m); t.anisotropy=8; if(srgb) t.colorSpace=THREE.SRGBColorSpace; return t; }; return pbrCache[name]={map:mk('d',true), normalMap:mk('n',false), roughnessMap:mk('r',false)}; }
+function pbr(name){ if(pbrCache[name]) return pbrCache[name]; const [dir,m]=PBR[name]; const mk=(f,srgb)=>{ const t=texLoader.load(dir+'/'+f+'.webp?v=1795726763'); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(1/m,1/m); t.anisotropy=8; if(srgb) t.colorSpace=THREE.SRGBColorSpace; return t; }; return pbrCache[name]={map:mk('d',true), normalMap:mk('n',false), roughnessMap:mk('r',false)}; }
 window.__loadManager=manager;
 function addSway(m, amp, byUv){ m.onBeforeCompile=sh=>{ sh.uniforms.time=window.__time; sh.vertexShader=('uniform float time;\n'+sh.vertexShader).replace('#include <begin_vertex>','#include <begin_vertex>\n{ vec3 wp=position;\n#ifdef USE_INSTANCING\nwp=(instanceMatrix*vec4(position,1.0)).xyz;\n#endif\nfloat sw=sin(time*1.3+wp.x*0.11+wp.z*0.07)+0.45*sin(time*2.4+wp.z*0.23+wp.x*0.05); float hf='+(byUv?'uv.y':'smoothstep(1.2,6.0,position.y)')+'; transformed.x+=sw*'+amp.toFixed(3)+'*hf; transformed.z+=sw*'+(amp*0.4).toFixed(3)+'*hf; }'); }; m.customProgramCacheKey=()=>'sway'+amp+(byUv?'u':'p'); m.userData.hook=(mm)=>addSway(mm,amp,byUv); }
 function addMacro(m,tile,blend){ m.onBeforeCompile=sh=>{ sh.uniforms.macroMap={value:TEX.macro()}; sh.uniforms.macroScale={value:tile/170}; sh.uniforms.blendMap={value:blend?pbr('dry').map:TEX.macro()}; sh.fragmentShader=sh.fragmentShader.replace('uniform vec3 diffuse;','uniform vec3 diffuse; uniform sampler2D macroMap; uniform sampler2D blendMap; uniform float macroScale;').replace('#include <map_fragment>','#include <map_fragment>\n#ifdef USE_MAP\n{ float mc=texture2D(macroMap, vMapUv*macroScale).r; float mc2=texture2D(macroMap, vMapUv*macroScale*4.7+0.37).r; float mc3=texture2D(macroMap, vMapUv*macroScale*2.3+0.71).r;'+(blend?' vec3 bl=texture2D(blendMap, vMapUv*1.07).rgb*diffuse; diffuseColor.rgb=mix(diffuseColor.rgb, bl, smoothstep(0.52,0.8,mc3)*0.5);':'')+' diffuseColor.rgb*= mix(vec3(0.74), vec3(1.2), mc)*mix(vec3(0.9),vec3(1.1),mc2); }\n#endif'); }; m.customProgramCacheKey=()=>'macro'+(blend?'b':''); m.userData.hook=(mm)=>addMacro(mm,tile,blend); }
@@ -492,7 +492,17 @@ for(const r of D.rooms){
 
 // ---------- walls ----------
 function wallTex(color,tex,h){ if(tex==='stone') return ['#cfc8b8','stone']; if(tex==='red-brick') return ['#ffffff','brick']; if(tex==='concrete-block') return ['#e4ddd0','plaster']; if(tex==='wood-panel') return ['#f3ecd9','plaster']; if(color==='#2f6b2f') return ['#4b8a3f','hedge']; if(h>=2.5) return ['#efe7d6','plaster']; return [color,null]; }
-for(const w of D.walls){
+// gate openings: the two estate entrances (from the data) + the farmhouse compound vehicle gate
+const gatesData=D.items.filter(i=>i[0]==='fence_gate'&&/entrance/i.test(i[8]||'')).map(i=>{ const c=D.catalog[i[0]]||[1,0.1,1]; return {x:i[1],z:i[2],rot:i[3],w:i[4]||c[0],h:i[6]||c[2]}; });
+gatesData.push({x:197.55,z:105,rot:90,w:8,h:1.8,compound:true});
+// cut every wall/kerb that runs through a gate opening (so gates sit in real openings, not inside solid walls)
+function cutWalls(walls){ const out=[]; for(const w of walls){ let pieces=[w]; for(const g of gatesData){ const th=-g.rot*Math.PI/180; const ux=Math.cos(th), uz=-Math.sin(th), nx=Math.sin(th), nz=Math.cos(th); const next=[];
+    for(const p of pieces){ const [x1,z1,x2,z2]=p; const d1=(x1-g.x)*nx+(z1-g.z)*nz, d2=(x2-g.x)*nx+(z2-g.z)*nz; const t1=(x1-g.x)*ux+(z1-g.z)*uz, t2=(x2-g.x)*ux+(z2-g.z)*uz; const half=g.w/2+0.35;
+      if(Math.abs(d1)<1.3&&Math.abs(d2)<1.3&&Math.max(t1,t2)>-half&&Math.min(t1,t2)<half){ const lo=Math.min(t1,t2), hi=Math.max(t1,t2); const seg=(a,b)=>{ const f=(t)=>{ const k=(t-t1)/(t2-t1); return [x1+(x2-x1)*k, z1+(z2-z1)*k]; }; const A=f(a), B=f(b); return [A[0],A[1],B[0],B[1],...p.slice(4)]; };
+        if(lo<-half) next.push(t1<t2?seg(t1,-half):seg(-half,t1)); if(hi>half) next.push(t1<t2?seg(half,t2):seg(t2,half)); }
+      else next.push(p); }
+    pieces=next; } out.push(...pieces); } return out; }
+for(const w of cutWalls(D.walls)){
   const [x1,z1,x2,z2,t,h,color,tex]=w;
   const L=Math.hypot(x2-x1,z2-z1); if(L<0.05) continue;
   const ang=Math.atan2(z2-z1,x2-x1);
@@ -686,10 +696,10 @@ function carModel(g,type,color){ const suv=type==='suv'; const L=suv?4.7:4.5, W=
 // ---------- items ----------
 const C=D.catalog;
 function dims(it){ const c=C[it[0]]||[1,1,1,'#999']; return {w:it[4]||c[0], d:it[5]||c[1], h:it[6]||c[2], color:it[7]||c[3], cat:c[4]}; }
-let count=0; const gatesData=[];
+let count=0;
 for(const it of D.items){
   const [id,x,z,rot]=it; const {w,d,h,color,cat}=dims(it); const note=it[8]||'';
-  if(id==='fence_gate' && /entrance/i.test(note)){ gatesData.push({x,z,rot,w,h}); continue; }
+  if(id==='fence_gate' && /entrance/i.test(note)){ continue; }
   const g=new THREE.Group(); g.position.set(x,0,z); g.rotation.y=-rot*Math.PI/180; world.add(g); count++;
   const flat=(c,tx)=>{ box(g,w,Math.max(h,0.03),d,0,Math.max(h,0.03)/2,0,c,tx?{map:tx}:{},false); };
   switch(true){
@@ -778,6 +788,17 @@ function arch(gd,text,sub){ const g=new THREE.Group(); g.position.set(gd.x,0,gd.
 }
 if(gatesData[0]) arch(gatesData[0],'MARUDHA FARMS','INTEGRATED AGRICULTURAL ESTATE');
 if(gatesData[1]) arch(gatesData[1],'MARUDHA FARMS','FARM OFFICE · SERVICE ENTRANCE');
+// farmhouse compound entrance: masonry pillars with lamps, paved apron from the road, paver parking with bays
+{ const cg=gatesData.find(g=>g.compound); if(cg){ const gx=cg.x, gz=cg.z, half=cg.w/2;
+  for(const sz of[-1,1]){ const pz=gz+sz*(half+0.45); box(world,0.6,2.3,0.6,gx,1.15,pz,'#cfc8b8',{map:'stone'}); box(world,0.8,0.18,0.8,gx,2.39,pz,'#d9d2c2',{map:'concrete'}); const l=sph(world,0.16,gx,2.62,pz,'#fff3b0'); l.material=mat('#fff3b0',{emissive:'#ffd36b',emissiveIntensity:1.2}); }
+  const pav={map:'brick',roughness:0.95}; const pc='#cfcac2';
+  box(world, 9.2, 0.05, 7.2, 193.0, 0.045, gz, pc, pav, false); // apron: road edge -> gate
+  for(const sz of[-1,1]) box(world, 9.2, 0.12, 0.25, 193.0, 0.06, gz+sz*3.7, '#b8b0a0',{map:'concrete'},false); // kerbs
+  box(world, 5.4, 0.05, 8.6, 201.2, 0.048, 105.15, pc, pav, false); // parking surface (pavers)
+  for(const z of[100.9,105.15,109.4]) box(world, 5.2, 0.012, 0.1, 201.2, 0.078, z, '#f4f1ea',{},false); box(world,0.1,0.012,8.5,203.85,0.078,105.15,'#f4f1ea',{},false); // bay markings
+  for(const z of[101.1,109.2]) box(world, 1.6, 0.14, 0.25, 200.25, 0.14, z, '#d9d2c2',{map:'concrete'},false); // wheel stops at the bay ends
+  const st=TEX.sign('FARMHOUSE','PRIVATE · RESIDENTS & GUESTS'); const sg=new THREE.Mesh(planeGeo,new THREE.MeshStandardMaterial({map:st,roughness:0.6})); sg.scale.set(1.3,1.3*192/1024,1); sg.position.set(gx-0.32,1.6,gz-half-0.45); sg.rotation.y=-Math.PI/2; sg.userData.noUV=true; world.add(sg);
+} }
 // lamp materials (for night), stars, birds
 window.__lampMats=[...matCache.values()].filter(m=>m.emissive && m.emissive.getHex()===0xffd36b); // (merged clones are added after bake)
 { const n=1400, pos=new Float32Array(n*3); for(let i=0;i<n;i++){ const a=Math.random()*6.28, e=Math.random()*1.3+0.1, r=2000; pos[i*3]=CENTER.x+Math.cos(a)*Math.cos(e)*r; pos[i*3+1]=Math.sin(e)*r; pos[i*3+2]=CENTER.z+Math.sin(a)*Math.cos(e)*r; }
@@ -837,14 +858,17 @@ for(const r of D.rooms){
 
 // ---------- dynamic objects: gates, goats, player, jeep ----------
 const dyn=new THREE.Group(); scene.add(dyn);
-gatesData.push({x:197.55,z:105,rot:90,w:8,h:150});
 const gates=gatesData.map(gd=>{
   const g=new THREE.Group(); g.position.set(gd.x,0,gd.z); g.rotation.y=-gd.rot*Math.PI/180; dyn.add(g);
-  box(g,0.3,2.4,0.3,-gd.w/2-0.2,1.2,0,'#6b5540'); box(g,0.3,2.4,0.3,gd.w/2+0.2,1.2,0,'#6b5540');
-  const leaves=[];
+  if(!gd.compound){ box(g,0.3,2.4,0.3,-gd.w/2-0.2,1.2,0,'#6b5540'); box(g,0.3,2.4,0.3,gd.w/2+0.2,1.2,0,'#6b5540'); }
+  const leaves=[]; const GC='#1f2a1d', GM={metalness:0.6,roughness:0.45};
   for(const side of [-1,1]){ const piv=new THREE.Group(); piv.position.set(side*gd.w/2,0,0); g.add(piv); const leaf=new THREE.Group(); piv.add(leaf);
-    const half=gd.w/2; for(let y=0.35;y<gd.h/100*0+1.7;y+=0.4) box(leaf,half,0.06,0.06,-side*half/2,y,0,'#3f3f3f'); for(let s=0.25;s<half;s+=0.35) box(leaf,0.05,1.6,0.05,-side*s,0.85,0,'#3f3f3f',{},false);
-    box(leaf,half,0.08,0.08,-side*half/2,1.75,0,'#3f3f3f'); bakeChildren(leaf); leaves.push({piv,side}); }
+    const half=gd.w/2, H=gd.compound?1.9:1.8; const cx=-side*half/2;
+    box(leaf,half,0.08,0.08,cx,0.25,0,GC,GM); box(leaf,half,0.08,0.08,cx,H*0.55,0,GC,GM); box(leaf,half,0.1,0.1,cx,H,0,GC,GM); // rails
+    box(leaf,0.09,H,0.09,-side*0.05,H/2,0,GC,GM); box(leaf,0.09,H,0.09,-side*(half-0.05),H/2,0,GC,GM); // stiles
+    for(let s=0.3;s<half-0.1;s+=0.16) box(leaf,0.035,H-0.3,0.035,-side*s,0.25+(H-0.3)/2,0,GC,GM,false); // bars
+    const br=box(leaf,Math.hypot(half-0.2,H-0.5),0.05,0.05,cx,H/2,0.06,GC,GM,false); br.rotation.z=-side*Math.atan2(H-0.5,half-0.2); // diagonal brace
+    bakeChildren(leaf); leaves.push({piv,side}); }
   bakeChildren(g);
   return {x:gd.x,z:gd.z,w:gd.w,leaves,open:0};
 });
